@@ -15106,14 +15106,14 @@ else
 
     if FreeLoad[GameId] then
         GG.GetLuaID = AutoLoad[GameId];
-        local srcName : string = "https://raw.githubusercontent.com/Yumiara/SS-Luarmor/refs/heads/main/ListFile/" .. GetLuaID;
+        local srcName : string = "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/ListFile/" .. GetLuaID;
         return loadScriptFromCache(srcName, GetLuaID, false, 600, false);
     elseif AutoLoad[GameId] then
         GG.GetLuaID = AutoLoad[GameId];
-        local srcName : string = "https://raw.githubusercontent.com/Yumiara/SS-Luarmor/refs/heads/main/API/K.lua";
+        local srcName : string = "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/K.oluac";
         return loadScriptFromCache(srcName, "API_K", false, 600, false);
     else
-        local srcName : string = "https://raw.githubusercontent.com/Yumiara/Secure-Sequence/refs/heads/main/Main/ListFile/Universal.lua";
+        local srcName : string = "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/ListFile/Universal.luac";
         return loadScriptFromCache(srcName, tos(GameId), false, 600, false);
     end;
 end;
