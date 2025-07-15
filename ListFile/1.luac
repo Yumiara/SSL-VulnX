@@ -1,0 +1,2 @@
+include("iostream");
+return print("input");
