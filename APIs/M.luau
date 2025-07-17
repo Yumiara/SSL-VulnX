@@ -4,6 +4,17 @@ if not game:IsLoaded() then
     game.Loaded:Wait();
 end;
 
+if GG.loaded then
+    if GG.WindUI then
+        return WindUI:Notify({
+            Title = "<font color='rgb(255,0,0)'>ALERT</font>",
+            Content = "Close current UI before re-execute.",
+            Icon = "circle-alert",
+            Duration = 20,
+        });
+    end;
+end;
+
 ------------- Super Global ----------
 
 GG = (getgenv and getgenv()) or _G or shared or false;
