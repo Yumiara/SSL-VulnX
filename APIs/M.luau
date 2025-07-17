@@ -30233,7 +30233,15 @@ else
         [1] = "TTJY_fv189-24OV.2.31.1_Uni3.0_Kernelss";
     };
 
+    local FreeCLoad = {
+        [-1] = "098f9f40b30bee3da175b9bee379adec"; 
+    };
+
     if FreeLoad[GameId] then
+        GG.GetLuaID = FreeLoad[GameId];
+        local srcName : string = "https://api.luarmor.net/files/v3/loaders/" .. GetLuaID .. ".lua";
+        return loadScriptFromCache(srcName, GetLuaID, false, 600, false);
+    elseif FreeLoad[GameId] then
         GG.GetLuaID = AutoLoad[GameId];
         local srcName : string = "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/ListFile/" .. GetLuaID;
         return loadScriptFromCache(srcName, GetLuaID, false, 600, false);
