@@ -13,6 +13,16 @@ if loaded then
             Duration = 20,
         });
     end;
+elseif loaded2 then
+    if WindUI then
+        WindUI:Notify({
+            Title = "<font color='rgb(255,0,0)'>ALERT</font>",
+            Content = "This script can't be re-execute.",
+            Icon = "circle-alert",
+            Duration = 20,
+        });
+    end;
+    return warn("This script can't be re-execute.");
 end;
 
 ------------- Super Global ----------
@@ -14952,6 +14962,40 @@ if type(GG.AssetStorage) == 'nil' then
             end;
         end;
     end;
+    AssetStorage.AI = function()
+        GG.AI_Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+        GG.BaseInfo = HttpGet("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/A.txt");
+        GG.AI_Body = {
+            contents = {
+                {
+                    parts = {
+                        {
+                            text = "Hi";
+                        };
+                    };
+                };
+            };
+        };
+
+        GG.AI_Request = function( Hasahc : base1Vulx ): response
+            local success, response = pcal(function()
+                return request({
+                    Url = AI_Url .. Hasahc,
+                    Method = "POST",
+                    Headers = {
+                        ["Content-Type"] = "application/json"
+                    },
+                    Body = EnCodeJ(HttpService, AI_Body)
+                });
+            end);
+
+            if success and response.Success then
+                return DeCodeJ(HttpService, response.Body).candidates[1].content.parts[1].text;
+            end;
+
+            return "Failed to connect to server.";
+        end;
+    end;
 end;
 
 GG.CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0};
@@ -14967,6 +15011,36 @@ GG.error_handler = GG.error_handler or function(...)
 end;
 GG.dist = GG.dist or function( position : Vector3 )
     return selff:DistanceFromCharacter(position);
+end;
+
+GG.tableToString = GG.tableToString or function(tbl, name)
+    name = name or "tbl";
+    local function serialize(t, indent)
+        indent = indent or 0;
+        local str = "{ ";
+        for k, v in pir(t) do
+            local key = nil;
+            if type(k) == "string" then
+                key = strformat("[%q]", k);
+            else
+                key = "[" .. tos(k) .. "]";
+            end;
+
+            local value;
+            if type(v) == "table" then
+                value = serialize(v, indent + 2);
+            elseif type(v) == "string" then
+                value = strformat("%q", v);
+            else
+                value = tos(v);
+            end;
+            str = str .. key .. " = " .. value .. ", ";
+        end;
+        str = str .. "}";
+        return str;
+    end;
+
+    return name .. " = " .. serialize(tbl) .. ";";
 end;
 
 
@@ -15043,11 +15117,11 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
     ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
 
     ScriptCache.createParagraph_Wel(tab, "TTJY",
-        "TTJY is a Luau developer who also created the official Flow site. With 4 years of scripting experience (TTJY Hub – NeuronX – Flow), TTJY manages all Flow APIs. If you need to report a bug, you can report it directly to TTJY.",
+        "TTJY is a Luau developer who also created the official VULX site. With 5 years of scripting experience (TTJY Hub – NeuronX – Flow - VULX), TTJY manages all VULX APIs. If you need to report a bug, you can report it directly to TTJY.",
         "user");
 
     ScriptCache.createParagraph_Wel(tab, "Ironic",
-        "Ironic is the founder of Flow. He usually manages Flow products like cheap Robux, accounts for sale, and oversees the community.",
+        "Ironic is the founder of VULX. He usually manages VULX products like cheap Robux, accounts for sale, and oversees the community.",
         "user");
 
     ScriptCache.createParagraph_Wel(tab, "Contact Us",
@@ -15069,6 +15143,268 @@ if GG.ScriptCache.userIdentify.unc_infos.require == "Lua" then
         tsort(MutationList);
         tsort(EggList);
         tsort(GearList);
+    end;
+end;
+
+------------- FileService -------------
+
+if type(AssetStorage.Files) ~= 'function' then
+    AssetStorage.Files = function()
+        GG.FileSys = GG.FileSys or {};
+        GG.FileSysOrigin = "FlowXS/";
+
+        function FileSys:Continue( a : fileName , b : string): nil
+            if appendfile and isfile then
+                return (isfile(a) and appendfile(a,b));
+            end;
+            return warn("[Flow] : Error : appendfile or isfile is not a valid function.");
+        end;
+        function FileSys:ListFrom( a : folderName , is_fullname : boolean , filesynx : string )
+            if listfiles and isfolder then
+                local ok, files = pcal(listfiles, FileSysOrigin .. a);
+                if not ok then return {}; end;
+                local list = {};
+                for _, f in ipir(files) do
+                    local corrected_name = f;
+                    if is_fullname then
+                        if not strfind(corrected_name, "FlowXS") then
+                            corrected_name = FileSysOrigin .. a .. "/" .. corrected_name;
+                        end;
+                    else
+                        corrected_name = f:match("([^/\\]+)%.macro$");
+                    end;
+                    if filesynx then
+                        corrected_name = corrected_name .. filesynx;
+                    end;
+                    tablein(list, corrected_name);
+                end;
+                return list;
+            end;
+            warn("[Flow] : Error : listfiles or isfolder is not a valid function.");
+            return {}; 
+        end;
+        function FileSys:WriteFrom( a : folderName , b : fileName , c : string ): nil
+            if isfolder and writefile then
+                local datas = c;
+                if type(datas) == 'table' then
+                    datas = EnCodeJ(HttpService, datas);
+                end;
+                if not isfolder(FileSysOrigin .. a) then
+                    makefolder(FileSysOrigin .. a);
+                end;
+                return writefile(FileSysOrigin .. a .. "/" .. b, datas);
+            end;
+            return warn("[Flow] : Error : isfolder or writefile is not a valid function.");
+        end;
+        function FileSys:ConvertTo( data : any , format : string ): any
+            if format == "Lua" then
+                if type(data) == 'string' then
+                    return "return function() " .. data .. "end";
+                end;
+                return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+            elseif format == "LuaJA" then
+                if type(data) == 'table' then
+                    local str = "{"
+                    local first = true
+                
+                    for k, v in pir(data) do
+                        if not first then
+                            str = str .. ",\n";
+                        end;
+                        first = false;
+                
+                        local keyStr = "[\"" .. tos(k) .. "\"]";
+                        local valStr = "\"" .. tos(v) .. "\"";
+                        str = str .. keyStr .. " = " .. valStr;
+                    end;
+                
+                    str = str .. "}";
+                    return "return " .. str;
+                end;
+                return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+            elseif format == "JSON" then
+                if type(data) == 'table' then
+                    -- Format to string;
+                end;
+                return warn("[Flow] : ConvertTo : Error : Argument #1 must be table.");
+            elseif format == "Encrypt" then
+                return warn("[Flow] : ConvertTo : Log : You are currently using demo filesystem.");
+            end;
+        end;
+        function FileSys:RepairTbl(tbl: table): table
+            if type(tbl) ~= "table" then
+                return "nilByTTJY";
+            end;
+        
+            local function safeRead(innerTbl, visited)
+                if visited[innerTbl] then
+                    return "[Circular Reference]";
+                end;
+                visited[innerTbl] = true;
+        
+                local newTbl = {};
+                for k, v in pairs(innerTbl) do
+                    local typeofv = typeof(v);
+                    if typeofv == 'Instance' then
+                        local desc = "Object is an Instance";
+                        if v.Parent then
+                            desc = desc .. " | Path is [ " .. v:GetFullName() .. " ]";
+                        else
+                            desc = desc .. " | Path is [ nil." .. tostring(v) .. " ]";
+                        end;
+                        newTbl[k] = desc;
+                    elseif typeofv == 'table' then
+                        newTbl[k] = safeRead(v, visited);
+                    elseif typeofv == 'CFrame' then
+                        newTbl[k] = "Object was CFrame. [ CF(" .. tconcat({v:GetComponents()}, ", ") .. ") ]";
+                    elseif typeofv == 'Vector2' then
+                        newTbl[k] = "Object was Vector2. [ Vec2(" .. tconcat({v.X, v.Y}, ", ") .. ") ]";
+                    elseif typeofv == 'Vector3' then
+                        newTbl[k] = "Object was Vector3. [ Vec3(" .. tconcat({v.X, v.Y, v.Z}, ", ") .. ") ]";
+                    else
+                        newTbl[k] = v;
+                    end;
+                end;
+                return newTbl;
+            end;
+        
+            return safeRead(tbl, {});
+        end;
+    end;
+end;
+
+------------- QueueService -------------
+
+if type(AssetStorage.QueueService) ~= 'function' then
+    AssetStorage.QueueService = function()
+        ScriptCache.OnTeleportCC = nil;
+        ScriptCache.f_I_table = {};
+        ScriptCache.f_n_table = {};
+        GG.Q_UploadFkey = function( key : any , f )
+            ScriptCache.f_I_table[key] = f;
+        end;
+        GG.Q_UploadFNokey = function( key : any , f )
+            tablein(ScriptCache.f_n_table, f);
+        end;
+        GG.Remove_Q_FKey = function( key : any , f )
+            ScriptCache.f_I_table[key] = nil;
+        end;
+        GG.Remove_Q_FNoKey = function( key : any , f )
+            for _,v in pir(ScriptCache.f_n_table) do
+                table.remove(ScriptCache.f_n_table, _);
+            end;
+        end;
+        GG.Q_Connect = function( States , is_Secure , queue_str )
+            if ScriptCache.OnTeleportCC then
+                ScriptCache.OnTeleportCC:Disconnect();
+                ScriptCache.OnTeleportCC = nil;
+            end;
+            ScriptCache.OnTeleportCC = selff.OnTeleport:Connect(function(State)
+                if GG.ONTCC and tablef(States, State) then -- Enum.TeleportState.Started, RequestedFromServer
+                    table.foreach(ScriptCache.f_I_table, function(i, v)
+                        return is_Secure and pcal(v) or v();
+                    end);
+                    table.foreach(ScriptCache.f_n_table, function(i, v)
+                        return is_Secure and pcal(v) or v();
+                    end);
+                    if queue_str then
+                        return queueOT(queue_str);
+                    end;
+                end;
+            end);
+        end;
+        GG.Q_Disonnect = function()
+            if ScriptCache.OnTeleportCC then
+                ScriptCache.OnTeleportCC:Disconnect();
+                ScriptCache.OnTeleportCC = nil;
+            end;
+        end;
+        GG.Q_Connect_Get = function( States , is_Secure, Method , func )
+            if ScriptCache.OnTeleportCC2 then
+                ScriptCache.OnTeleportCC2:Disconnect();
+                ScriptCache.OnTeleportCC2 = nil;
+            end;
+            ScriptCache.OnTeleportCC2 = selff.OnTeleport:Connect(function(State)
+                if GG.ONTCC2 and tablef(States, State) then
+                    table.foreach(ScriptCache.f_I_table, function(i, v)
+                        return is_Secure and pcal(v) or v();
+                    end);
+                    table.foreach(ScriptCache.f_n_table, function(i, v)
+                        return is_Secure and pcal(v) or v();
+                    end);
+                    local queue_str = func and func();
+                    if queue_str then
+                        return queueOT(queue_str);
+                    end;
+                end;
+            end);
+        end;
+        GG.Q_Disonnect2 = function()
+            if ScriptCache.OnTeleportCC2 then
+                ScriptCache.OnTeleportCC2:Disconnect();
+                ScriptCache.OnTeleportCC2 = nil;
+            end;
+        end;
+    end;
+end;
+
+------------- SensitiveService -------------
+
+if type(AssetStorage.SensitiveService) ~= 'function' then
+    AssetStorage.SensitiveService = function()
+        local RawC = {};
+        GG.SLow_ForceSelfThisFunction = function( key )
+            local Attempt_To_Index_Function = clonefunction(GG[key])
+            GG[key] = function(...)
+                Attempt_To_Index_Function(...)
+                return Attempt_To_Index_Function;
+            end;
+            tablein(RawC, GG[key]);
+        end;
+        GG.SLow_SelfThisFunction = function( key )
+            local Attempt_To_Index_Function = clonefunction(GG[key])
+            GG[key] = function(...)
+                local Return = Attempt_To_Index_Function(...);
+                if Return then
+                    return Return;
+                end;
+                return Attempt_To_Index_Function;
+            end;
+            tablein(RawC, GG[key]);
+        end;
+        GG.Lower_ForceSelfThisFunction = function( key )
+            local Attempt_To_Hooked = nil;
+            if GG[key] then
+                Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
+                    Attempt_To_Hooked(...);
+                    return GG[key];
+                end));
+            end;
+            tablein(RawC, GG[key]);
+        end;
+        GG.Lower_SelfThisFunction = function( key )
+            local Attempt_To_Hooked = nil;
+            if GG[key] then
+                Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
+                    local Return = Attempt_To_Hooked(...);
+                    if Return then
+                        return Return;
+                    end;
+                    return GG[key];
+                end));
+            end;
+            tablein(RawC, GG[key]);
+        end;
+        GG.Restore_SensitiveService = function( offset )
+            return table.foreach(RawC, function(_, v)
+                if v == offset then
+                    pcal(function()
+                        ResetC(offset);
+                        table.remove(RawC, _);
+                    end);
+                end;
+            end);
+        end;
     end;
 end;
 
@@ -15111,6 +15447,7 @@ else
     local AutoLoad = {
         [2294168059] = "b01a3cee180d19da18567ab7f9897b9e";
         [7436755782] = "fb45a6ab84d1a50d8b0bed8c984dcc66";
+        [6057699512] = "0e276aee6d45d0189d01c76758d7f1e3";
     };
 
     local FreeCLoad = {
