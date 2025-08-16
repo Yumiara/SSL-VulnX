@@ -15455,6 +15455,8 @@ else
         [1176784616] = "206bb6455d24407721627649fe7fc3c5";
     };
 
+	local FreeLoad = {};
+
     if FreeCLoad[GameId] then
         GG.GetLuaID = FreeCLoad[GameId];
         local srcName : string = "https://api.luarmor.net/files/v3/loaders/" .. GetLuaID .. ".lua";
