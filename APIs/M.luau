@@ -252,6 +252,7 @@ if not GG.ReplicatedFirst_lc then
         Vec3 = Vector3.new;
         Vec2 = Vector2.new;
         CF = CFrame.new;
+        CFAg = CFrame.Angles;
 
         pir = pairs;
         ipir = ipairs;
@@ -438,6 +439,8 @@ if not GG.ScriptCache.userIdentify.is_loaded_lc then
 
             GG.selc = selff.Character;
             GG.Backpack = selff.Backpack;
+
+            GG.RNG = Random.new();
 
             GG.HumRSelf = selc and FindFirstChild(selc, "HumanoidRootPart");
         end);
@@ -13497,6 +13500,115 @@ if GameId == 2294168059 then
     end;
 end;
 
+if GameId == 6331902150 then
+    GG.ForsakenEmotes = GG.ForsakenEmotes or {};
+    GG.ATKAnimsFors = GG.ATKAnimsFors or {
+        'rbxassetid://131430497821198', --// MassInfection, 1x1x1x1
+        'rbxassetid://83829782357897', --// Slash, 1x1x1x1
+        'rbxassetid://126830014841198', --// Slash, Jason
+        'rbxassetid://126355327951215', --// Behead, Jason
+        'rbxassetid://121086746534252', --// GashingWoundStart, Jason
+        'rbxassetid://105458270463374', --// Slash, JohnDoe
+        'rbxassetid://127172483138092', --// CorruptEnergy, JohnDoe
+        'rbxassetid://18885919947', --// CorruptNature, c00lkidd
+        'rbxassetid://18885909645', --// Attack, c00lkidd
+        'rbxassetid://87259391926321', --// ParryPunch, Guest1337
+        'rbxassetid://106014898528300', --// Charge, Guest1337
+        'rbxassetid://87259391926321', --// Punch, Guest1337
+        'rbxassetid://86545133269813', --// Stab, TwoTime
+        'rbxassetid://89448354637442', --// LungeStart, TwoTime
+        'rbxassetid://90499469533503', --// GunFire, Chance
+        'rbxassetid://116618003477002', --// Slash, Shedletsky
+        'rbxassetid://106086955212611', --// Stab, TwoTime, Skin: PhilosopherTwotime
+        'rbxassetid://107640065977686', --// LungeStart, TwoTime, Skin: PhilosopherTwotime
+        'rbxassetid://77124578197357', --// GunFire, Chance, Skin: OutlawChance
+        'rbxassetid://101771617803133', --// GunFire, Chance, Skin: #CassidyChance
+        'rbxassetid://134958187822107', --// GunFire, Chance, Skin: RetroChance
+        'rbxassetid://111313169447787', --// GunFire, Chance, Skin: MLGChance
+        'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone100Chance
+        'rbxassetid://71685573690338', --// GunFire, Chance, Skin: Milestone75Chance
+        'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #NerfedDemomanGuest
+        'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #NerfedDemomanGuest
+        'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #NerfedDemomanGuest
+        'rbxassetid://136007065400978', --// ParryPunch, Guest1337, Skin: LittleBrotherGuest
+        'rbxassetid://136007065400978', --// Punch, Guest1337, Skin: LittleBrotherGuest
+        'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone100Guest
+        'rbxassetid://86096387000557', --// ParryPunch, Guest1337, Skin: Milestone75Guest
+        'rbxassetid://108807732150251', --// ParryPunch, Guest1337, Skin: GreenbeltGuest
+        'rbxassetid://138040001965654', --// Punch, Guest1337, Skin: GreenbeltGuest
+        'rbxassetid://73502073176819', --// Charge, Guest1337, Skin: GreenbeltGuest
+        'rbxassetid://129843313690921', --// ParryPunch, Guest1337, Skin: #DemomanGuest
+        'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: #DemomanGuest
+        'rbxassetid://129843313690921', --// Punch, Guest1337, Skin: #DemomanGuest
+        'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: GunnerGuest
+        'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: BobbyGuest
+        'rbxassetid://97623143664485', --// Charge, Guest1337, Skin: !JuggernautGuest
+        'rbxassetid://86709774283672', --// ParryPunch, Guest1337, Skin: SorcererGuest
+        'rbxassetid://106014898528300', --// Charge, Guest1337, Skin: SorcererGuest
+        'rbxassetid://87259391926321', --// Punch, Guest1337, Skin: SorcererGuest
+        'rbxassetid://140703210927645', --// ParryPunch, Guest1337, Skin: DragonGuest
+        'rbxassetid://96173857867228', --// Charge, Guest1337, Skin: AllyGuest
+        'rbxassetid://121255898612475', --// Slash, Shedletsky, Skin: RetroShedletsky
+        'rbxassetid://98031287364865', --// Slash, Shedletsky, Skin: BrightEyesShedletsky
+        'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: NessShedletsky
+        'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone100Shedletsky
+        'rbxassetid://77448521277146', --// Slash, Shedletsky, Skin: Milestone75Shedletsky
+        'rbxassetid://103741352379819', --// Slash, Shedletsky, Skin: #RolandShedletsky
+        'rbxassetid://119462383658044', --// Slash, Shedletsky, Skin: HeartbrokenShedletsky
+        'rbxassetid://131696603025265', --// Slash, Shedletsky, Skin: JamesSunderlandShedletsky
+        'rbxassetid://122503338277352', --// Slash, Shedletsky, Skin: SkiesShedletsky
+        'rbxassetid://97648548303678', --// Slash, Shedletsky, Skin: #JohnWardShedletsky
+        'rbxassetid://94162446513587', --// Slash, JohnDoe, Skin: !Joner
+        'rbxassetid://84426150435898', --// CorruptEnergy, JohnDoe, Skin: !Joner
+        'rbxassetid://93069721274110', --// Slash, JohnDoe, Skin: AnnihilationJohnDoe
+        'rbxassetid://114620047310688', --// CorruptEnergy, JohnDoe, Skin: AnnihilationJohnDoe
+        'rbxassetid://97433060861952', --// Slash, JohnDoe, Skin: #SK
+        'rbxassetid://82183356141401', --// CorruptEnergy, JohnDoe, Skin: #SK
+        'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: Fleskhjerta1x1x1x1
+        'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: Fleskhjerta1x1x1x1
+        'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: AceOfSpades1x1x1x1
+        'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: AceOfSpades1x1x1x1
+        'rbxassetid://100592913030351', --// MassInfection, 1x1x1x1, Skin: Lancer1x1x1x1
+        'rbxassetid://121293883585738', --// Slash, 1x1x1x1, Skin: Lancer1x1x1x1
+        'rbxassetid://70447634862911', --// MassInfection, 1x1x1x1, Skin: Hacklord1x1x1x1
+        'rbxassetid://92173139187970', --// Slash, 1x1x1x1, Skin: Hacklord1x1x1x1
+        'rbxassetid://106847695270773', --// GashingWoundStart, Jason, Skin: Subject0Jason
+        'rbxassetid://125403313786645', --// Slash, Jason, Skin: Subject0Jason
+        'rbxassetid://81639435858902', --// Behead, Jason, Skin: WhitePumpkinJason
+        'rbxassetid://137314737492715', --// GashingWoundStart, Jason, Skin: WhitePumpkinJason
+        'rbxassetid://120112897026015', --// Slash, Jason, Skin: WhitePumpkinJason
+        'rbxassetid://82113744478546', --// Behead, Jason, Skin: KillerKyleJason
+        'rbxassetid://118298475669935', --// Slash, Jason, Skin: KillerKyleJason
+        'rbxassetid://82113744478546', --// Behead, Jason, Skin: #SmartestJason
+        'rbxassetid://118298475669935', --// Slash, Jason, Skin: #SmartestJason
+        'rbxassetid://126681776859538', --// Behead, Jason, Skin: PursuerJason
+        'rbxassetid://129976080405072', --// GashingWoundStart, Jason, Skin: PursuerJason
+        'rbxassetid://109667959938617', --// Slash, Jason, Skin: PursuerJason
+        'rbxassetid://74707328554358', --// Slash, Jason, Skin: #DeadRabbitsJason
+        'rbxassetid://133336594357903', --// Behead, Jason, Skin: #DeadRabbitsJason
+        'rbxassetid://86204001129974', --// GashingWoundStart, Jason, Skin: #DeadRabbitsJason
+        'rbxassetid://82113744478546', --// Behead, Jason, Skin: RetroJason
+        'rbxassetid://118298475669935', --// Slash, Jason, Skin: RetroJason
+        'rbxassetid://124243639579224', --// CorruptNature, c00lkidd, Skin: MafiosoC00l
+        'rbxassetid://70371667919898', --// Attack, c00lkidd, Skin: MafiosoC00l
+        'rbxassetid://131543461321709', --// Attack, c00lkidd, Skin: SaviorC00l
+        'rbxassetid://136323728355613', --// Swing, Noli
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Devesto
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Yourself
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: YAAI
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Toolbox
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: ASPX
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: RedRoomCurse
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Saggitial
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Quimera
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: 035
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Artful
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Robert
+        'rbxassetid://109230267448394', --// Swing, Noli, Skin: Ephialtes
+        'rbxassetid://109230267448394' --// Swing, Noli, Skin: Umbra
+    };
+end;
+
 ------------- Script Asset / Script Cache 1 -------------
 
 if type(GG.AssetStorage) == 'nil' then
@@ -14840,11 +14952,12 @@ if type(GG.AssetStorage) == 'nil' then
                     end;
         
                     local DevMSG = {
-                        {Text = "Project : Secure Sequence", Duration = 0.5},
-                        {Text = "Script verified by Flow AI", Duration = 0.5},
-                        {Text = "Script verfied by TTY's Bot", Duration = 0.5},
+                        {Text = "Vulnerability X", Duration = 0.5},
+                        {Text = "Script verified by VULX AI", Duration = 0.5},
+                        {Text = "Script verfied by TTJY's Bot", Duration = 0.5},
                         {Text = "Script made by TTJY", Duration = 0.5},
                         {Text = "Script made by Sevensenz7", Duration = 0.5},
+                        {Text = "Script made by x.nep", Duration = 0.5},
                         {Text = "Thank you!", Duration = 0.5}
                     }
         
@@ -15071,7 +15184,7 @@ ScriptCache.fetchDiscordInfo_Wel = ScriptCache.fetchDiscordInfo_Wel or function(
 end;
 
 GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI): any
-    ScriptCache.InviteCode = ScriptCache.InviteCode or "flows";
+    ScriptCache.InviteCode = ScriptCache.InviteCode or "c8cUR6Unay";
     local DiscordAPI = "https://discord.com/api/v10/invites/" .. ScriptCache.InviteCode .. "?with_counts=true&with_expiration=true";
     
     local Response = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
@@ -15102,17 +15215,15 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
 
     ScriptCache.createSection_Wel(tab, "✨ Script Infos ✨");
 
-    ScriptCache.createParagraph_Wel(tab, "The Mimic",
-        "Flow has a Mimic script that includes client features, ESP, and auto gameplay. Flow also has an auto-play system used to grind coins from the start to the end of Book 2, Chapter 3 on Nightmare difficulty. We've been developing this script for 4 years. Need to play The Mimic? You need Flow.",
-        "ghost");
-
-    ScriptCache.createParagraph_Wel(tab, "Dragon Adventure",
-        "Flow has a <b>Dragon Adventures</b> script packed with many <b>OP features</b> like <b>dragon godmode</b>. It also includes an <b>auto-farm system</b> to grind coins, treasures, mobs, and more. Flow isn’t limited to dragon features — it also offers client tools like <b>fly</b>, <b>noclip</b>, <b>walkspeed</b>, and more. <i>Need to play Dragon Adventures? You need Flow.</i><br/><br/><font color=\"#FF0000\"><b>Dragon Adventures has a powerful Anti-Cheat system</b></font>, and some configurations may be detected. Please read the documentation at <u>https://ttjy-hub.gitbook.io/flow-together</u>",
-        "bird");
-
-    ScriptCache.createParagraph_Wel(tab, "Anime Saga",
-        "Flow has an <b>Anime Saga</b> script that includes client features, auto gameplay, auto heal, and modded abilities.\n<b>Anime Saga</b> is currently in development mode, and <font color=\"#FF0000\">due to script security, we can't create the <b>bypass</b> for World, Act, or Difficulty yet.</font>\n<font color=\"#FF0000\">However, in the next update, we will have the <b>bypass</b> for those, so we can finally join any mode or chapter we want without having to <b>unlock</b> them.</font>",
-        "globe");
+    ScriptCache.createParagraph_Wel(tab, "Forsaken",
+        "VULX has the best <b>Forsaken</b> script, featuring invisibility, cool emotes, ESP, and other tools to enhance your gameplay.\n<font color=\"#FF0000\">Reach is still in development; to enable it, you must use <b>Config ONLY</b>.</font>",
+        "sword");
+    ScriptCache.createParagraph_Wel(tab, "Tower Defense Simulator",
+        "VULX is the only script available for <b>Tower Defense Simulator</b>. Our features are great, but we highly recommend trying it on an <b>alt account</b> or recording a macro on an alt due to the strong anti-cheat system.\n<font color=\"#FF0000\">More updates are coming soon. For now, we only have the macro feature because TTJY has been busy.</font>",
+        "shield");
+    ScriptCache.createParagraph_Wel(tab, "All Star X",
+        "VULX offers an <b>All Star X</b> script that includes an excellent macro, AFK farming, and more.\nThe game has no anti-cheat, so you don’t need to worry.",
+        "shield");
 
     ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
 
@@ -15124,8 +15235,12 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
         "Ironic is the founder of VULX. He usually manages VULX products like cheap Robux, accounts for sale, and oversees the community.",
         "user");
 
+    ScriptCache.createParagraph_Wel(tab, "x.nep",
+        "x.nep is also a Luau developer who helps with VULX in coding.",
+        "user");
+
     ScriptCache.createParagraph_Wel(tab, "Contact Us",
-        "Discord : discord.gg/flows",
+        "Discord : discord.gg/c8cUR6Unay",
         "contact"
     );
 end;
@@ -15448,6 +15563,7 @@ else
         [2294168059] = "b01a3cee180d19da18567ab7f9897b9e";
         [7436755782] = "fb45a6ab84d1a50d8b0bed8c984dcc66";
         [6057699512] = "0e276aee6d45d0189d01c76758d7f1e3";
+        [6331902150] = "12f176c70499dbab6db5ce9c797321a4";
     };
 
     local FreeCLoad = {
@@ -15455,7 +15571,7 @@ else
         [1176784616] = "206bb6455d24407721627649fe7fc3c5";
     };
 
-	local FreeLoad = {};
+    local FreeLoad = {};
 
     if FreeCLoad[GameId] then
         GG.GetLuaID = FreeCLoad[GameId];
