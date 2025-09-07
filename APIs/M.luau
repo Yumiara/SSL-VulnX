@@ -28,6 +28,7 @@ end;
 ------------- Super Global ----------
 
 GG = (getgenv and getgenv()) or _G or shared or false;
+GG.Experimental_Beta = false;
 
 if not GG then
     return game:GetService("Players").LocalPlayer:Kick("GG not found. Please report this bug in discord server and tell us your executor.");
@@ -299,6 +300,8 @@ if not GG.ReplicatedFirst_lc then
         StarterGui = "StarterGui";
         GuiService = "GuiService";
         R  = "ReplicatedStorage";
+        SoundS = "SoundService";
+        TestS = "TestService";
         VU = "VirtualUser";
         H = "RunService";
         W = "Workspace";
@@ -443,6 +446,58 @@ if not GG.ScriptCache.userIdentify.is_loaded_lc then
             GG.RNG = Random.new();
 
             GG.HumRSelf = selc and FindFirstChild(selc, "HumanoidRootPart");
+
+            if LowerC then
+                if not ScriptCache.AlreadyHookedUNC and GG.Experimental_Beta then
+                    ScriptCache.AlreadyHookedUNC = true;
+
+                    local o = nil;
+                    o = LowerC(WaitForChild, function(obj, name, timeout)
+                        local startTime = tick()
+
+                        if timeout and timeout >= 99 then
+                            while tick() - startTime < 3 do
+                                if FindFirstChild(obj, name) then
+                                    return o(obj, name, timeout);
+                                end;
+                                twait(0.1);
+                            end;
+                            if not FindFirstChild(obj, name) then
+                                local bind = Instancen("BindableEvent");
+                                local skipChosen = false;
+
+                                StarterGui:SetCore("SendNotification", {
+                                    Title = "WaitForChild Timeout",
+                                    Text = "Object '" .. tos(name) .. "' not found.\nSkip waiting?",
+                                    Duration = 30,
+                                    Button1 = "Skip",
+                                    Button2 = "Wait",
+                                    Callback = function(btn)
+                                        print(btn);
+                                        if btn == "Skip" then
+                                            skipChosen = true;
+                                        end;
+                                        bind:Fire();
+                                        StarterGui:SetCore("SendNotification", {
+                                            Title = "Error",
+                                            Text = "Please report this bug.\nObject '" .. tos(name) .. "' not found.",
+                                            Duration = 10,
+                                        });
+                                    end;
+                                });
+
+                                bind.Event:Wait();
+                                bind:Destroy();
+
+                                if skipChosen then
+                                    return nil;
+                                end;
+                            end;
+                        end;
+                        return o(obj, name, timeout);
+                    end);
+                end;
+            end;
         end);
 
         if GlobalOneRunCall then
