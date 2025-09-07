@@ -111,8 +111,6 @@ getgenv().AddOnF = function( tab : tab , windUI : WindUI , isUi_Closed )
     ScriptCache.AddOn_trailController = ScriptCache.AddOn_trailController or nil;
     ScriptData.SavedFeatures.AddOnPfp_Pragraph = { Desc = '<b><font color="#ff0000">[VULX]</font></b> Official addon by <font color="#00ff00">TTJY</font>. <i>Note:</i> This is a simple script with <b>no bypass</b> — use at your own risk!', };
     ScriptData.SavedFeatures.AddOnPfp_SectionTrail = { Title = "✨ Trail ✨", TextXAlignment = "Center" };
-    ScriptData.SavedFeatures.AddOnPfp_MakeTrail = { Title = "Make Trail"; Callback = function() if ScriptCache.AddOn_trailController then ScriptCache.AddOn_trailController.Destroy(); end; ScriptCache.AddOn_trailController = CreateArmTrails(selc, ScriptCache.SelectedTrailColor); end; };
-    ScriptData.SavedFeatures.AddOnPfp_RemoveTrail = { Title = "Remove Trail"; Callback = function() if ScriptCache.AddOn_trailController then return ScriptCache.AddOn_trailController.Destroy(); end; end };
 
     local function findArmPart(character, side)
         local humanoid = FindFirstChildOfClass(character, "Humanoid");
@@ -191,6 +189,9 @@ getgenv().AddOnF = function( tab : tab , windUI : WindUI , isUi_Closed )
             end;
         };
     end;
+
+    ScriptData.SavedFeatures.AddOnPfp_MakeTrail = { Title = "Make Trail"; Callback = function() if ScriptCache.AddOn_trailController then ScriptCache.AddOn_trailController.Destroy(); end; ScriptCache.AddOn_trailController = CreateArmTrails(selc, ScriptCache.SelectedTrailColor); end; };
+    ScriptData.SavedFeatures.AddOnPfp_RemoveTrail = { Title = "Remove Trail"; Callback = function() if ScriptCache.AddOn_trailController then return ScriptCache.AddOn_trailController.Destroy(); end; end };
 
     tab:Paragraph(ScriptData.SavedFeatures.AddOnPfp_Pragraph);
     tab:Section(ScriptData.SavedFeatures.AddOnPfp_SectionTrail);
