@@ -203,6 +203,6 @@ getgenv().AddOnF = function( tab : tab , windUI : WindUI , isUi_Closed )
             ScriptCache.SelectedTrailColor = option;
         end
     });
-    tab:Button(ScriptCache.SavedFeatures.AddOnPfp_MakeTrail);
-    tab:Button(ScriptCache.SavedFeatures.AddOnPfp_RemoveTrail);
+    tab:Button(ScriptData.SavedFeatures.AddOnPfp_MakeTrail);
+    tab:Button(ScriptData.SavedFeatures.AddOnPfp_RemoveTrail);
 end;
