@@ -108,6 +108,7 @@ if not GG.ReplicatedFirst_lc then
     GG.UDim2 = UDim2;
     GG.Font = Font;
     GG.coru = coroutine;
+    GG.bff = buffer;
 
     GG.SecureEnv = {
         dumpheap = dumpheap or debug.dumpheap;
@@ -278,6 +279,8 @@ if not GG.ReplicatedFirst_lc then
 
         CSnew = ColorSequence.new;
         CSKnew = ColorSequenceKeypoint.new;
+
+        bfromstring = bff and bff.fromstring;
         
         LowerC = hookfunction or hookfunc;
         UpperC = hookmetamethod;
@@ -13556,7 +13559,392 @@ if GameId == 2294168059 then
 end;
 
 if GameId == 6331902150 then
-    GG.ForsakenEmotes = GG.ForsakenEmotes or {};
+    GG.ForsakenEmotes = GG.ForsakenEmotes or { -- Auto Update + Lua Format by Sevensenz7
+        ["Wave"] = {
+            AssetID = "rbxassetid://128777973",
+            DisplayName = "Wave",
+            ModuleName = "Wave",
+            SFX = "rbxassetid://154865749"
+        },
+        ["Wait"] = {
+            AssetID = "rbxassetid://119813505721636",
+            DisplayName = "Wait",
+            ModuleName = "Wait",
+            SFX = "rbxassetid://123179402505565"
+        },
+        ["VirtualInsanity"] = {
+            AssetID = "rbxassetid://103333882912121",
+            DisplayName = "Virtual Insanity",
+            ModuleName = "VirtualInsanity",
+            SFX = "rbxassetid://95268211149914"
+        },
+        ["TwoTwoTwo"] = {
+            AssetID = "rbxassetid://132144576305869",
+            DisplayName = "2Two2",
+            ModuleName = "TwoTwoTwo",
+            SFX = "rbxassetid://103537259641677"
+        },
+        ["Tenna"] = {
+            AssetID = "rbxassetid://114687172329033",
+            DisplayName = "Tenna",
+            ModuleName = "Tenna",
+            SFX = "rbxassetid://98962941330723"
+        },
+        ["TVTime"] = {
+            AssetID = "rbxassetid://139299160503081",
+            DisplayName = "TV Time",
+            ModuleName = "TVTime",
+            SFX = "rbxassetid://112013996314654"
+        },
+        ["TUFF"] = {
+            AssetID = "rbxassetid://109569860731042",
+            DisplayName = "Who Wins",
+            ModuleName = "TUFF",
+            SFX = "rbxassetid://117520733630504"
+        },
+        ["Sukuna"] = {
+            AssetID = "rbxassetid://112276030300130",
+            DisplayName = "Sukuna",
+            ModuleName = "Sukuna",
+            SFX = "rbxassetid://137906124003434"
+        },
+        ["SubjectThree"] = {
+            AssetID = "rbxassetid://75193609204744",
+            DisplayName = "Subject Three",
+            ModuleName = "SubjectThree",
+            SFX = "rbxassetid://136651893030423"
+        },
+        ["StockDance"] = {
+            AssetID = "rbxassetid://133140863961315",
+            DisplayName = "Stock Dance",
+            ModuleName = "StockDance",
+            SFX = "rbxassetid://133597046104197"
+        },
+        ["Static"] = {
+            AssetID = "rbxassetid://94425494947119",
+            DisplayName = "Static",
+            ModuleName = "Static",
+            SFX = "rbxassetid://107391158617439"
+        },
+        ["SoRetro"] = {
+            AssetID = "rbxassetid://90399490625732",
+            DisplayName = "So Retro",
+            ModuleName = "SoRetro",
+            SFX = "rbxassetid://81332555827290"
+        },
+        ["Skeleton"] = {
+            AssetID = "rbxassetid://71083881571066",
+            DisplayName = "Skeleton",
+            ModuleName = "Skeleton",
+            SFX = "rbxassetid://102253665730313"
+        },
+        ["Silly"] = {
+            AssetID = "rbxassetid://107716765704359",
+            DisplayName = "Silly",
+            ModuleName = "Silly",
+            SFX = "rbxassetid://110142673940576"
+        },
+        ["Schadenfreude"] = {
+            AssetID = "rbxassetid://94051835643882",
+            DisplayName = "Schadenfreude",
+            ModuleName = "Schadenfreude",
+            SFX = "nil"
+        },
+        ["Rodrick"] = {
+            AssetID = "rbxassetid://123970007231370",
+            DisplayName = "You're Dead",
+            ModuleName = "Rodrick",
+            SFX = "nil"
+        },
+        ["Prince"] = {
+            AssetID = "rbxassetid://128012749953319",
+            DisplayName = "Prince",
+            ModuleName = "Prince",
+            SFX = "rbxassetid://85402005566016"
+        },
+        ["PopDance"] = {
+            AssetID = "rbxassetid://119907842673039",
+            DisplayName = "Pop Dance",
+            ModuleName = "PopDance",
+            SFX = "rbxassetid://108553856293180"
+        },
+        ["Poisoned"] = {
+            AssetID = "rbxassetid://83463199855585",
+            DisplayName = "Poisoned",
+            ModuleName = "Poisoned",
+            SFX = "rbxassetid://118582448199737"
+        },
+        ["Penguin"] = {
+            AssetID = "rbxassetid://132087606887347",
+            DisplayName = "Penguin",
+            ModuleName = "Penguin",
+            SFX = "rbxassetid://92148164551117"
+        },
+        ["PYT"] = {
+            AssetID = "rbxassetid://91362496118165",
+            DisplayName = "PYT",
+            ModuleName = "PYT",
+            SFX = "rbxassetid://123571142022763"
+        },
+        ["OppaGangnam"] = {
+            AssetID = "rbxassetid://108308837970067",
+            DisplayName = "Gangnam if it was awesome",
+            ModuleName = "OppaGangnam",
+            SFX = "rbxassetid://121721906007526"
+        },
+        ["MonsterMash"] = {
+            AssetID = "rbxassetid://111309618966926",
+            DisplayName = "Monster Mash",
+            ModuleName = "MonsterMash",
+            SFX = "rbxassetid://110492070824289"
+        },
+        ["Mesmerizer"] = {
+            AssetID = "rbxassetid://102332849201255",
+            DisplayName = "Mesmerizer",
+            ModuleName = "Mesmerizer",
+            SFX = "rbxassetid://71934965392436"
+        },
+        ["Macarena"] = {
+            AssetID = "rbxassetid://99366472605758",
+            DisplayName = "Macarena",
+            ModuleName = "Macarena",
+            SFX = "rbxassetid://78191952114848"
+        },
+        ["LostInParadise"] = {
+            AssetID = "rbxassetid://137980666622050",
+            DisplayName = "Lost In Paradise",
+            ModuleName = "LostInParadise",
+            SFX = "rbxassetid://123165091822538"
+        },
+        ["Locked"] = {
+            AssetID = "rbxassetid://77920404652731",
+            DisplayName = "Locked",
+            ModuleName = "Locked",
+            SFX = "rbxassetid://117520733630504"
+        },
+        ["LethalCompany"] = {
+            AssetID = "rbxassetid://89926565466406",
+            DisplayName = "Company Groove",
+            ModuleName = "LethalCompany",
+            SFX = "rbxassetid://87037127480984"
+        },
+        ["Konton"] = {
+            AssetID = "rbxassetid://104894697830131",
+            DisplayName = "Konton",
+            ModuleName = "Konton",
+            SFX = "rbxassetid://101625034966758"
+        },
+        ["Khaled"] = {
+            AssetID = "rbxassetid://105276039560672",
+            DisplayName = "Khaled",
+            ModuleName = "Khaled",
+            SFX = "rbxassetid://122842879682932"
+        },
+        ["KazotskyKick"] = {
+            AssetID = "rbxassetid://83225211078144",
+            DisplayName = "Kazotsky Kick",
+            ModuleName = "KazotskyKick",
+            SFX = "rbxassetid://71071074526835"
+        },
+        ["Jumpstyle"] = {
+            AssetID = "rbxassetid://76148053209080",
+            DisplayName = "Jumpstyle",
+            ModuleName = "Jumpstyle",
+            SFX = "rbxassetid://95018041323246"
+        },
+        ["JumpingForJoy"] = {
+            AssetID = "rbxassetid://139769270640106",
+            DisplayName = "Jumping for Joy!",
+            ModuleName = "JumpingForJoy",
+            SFX = "rbxassetid://93437775595137"
+        },
+        ["Insanity"] = {
+            AssetID = "rbxassetid://75420633536507",
+            DisplayName = "Insanity",
+            ModuleName = "Insanity",
+            SFX = "rbxassetid://125452574134166"
+        },
+        ["Hotdog"] = {
+            AssetID = "rbxassetid://70533211127594",
+            DisplayName = "Hotdog",
+            ModuleName = "Hotdog",
+            SFX = "rbxassetid://75226719036096"
+        },
+        ["HeyNow"] = {
+            AssetID = "rbxassetid://81512503280172",
+            DisplayName = "Hey Now",
+            ModuleName = "HeyNow",
+            SFX = "rbxassetid://104633544271348"
+        },
+        ["Hero"] = {
+            AssetID = "rbxassetid://133160365635320",
+            DisplayName = "The Hero",
+            ModuleName = "Hero",
+            SFX = "rbxassetid://114638282732720"
+        },
+        ["Headbanger"] = {
+            AssetID = "rbxassetid://103719006556178",
+            DisplayName = "Headbanger",
+            ModuleName = "Headbanger",
+            SFX = "rbxassetid://90515396415213"
+        },
+        ["HakariDance"] = {
+            AssetID = "rbxassetid://138019937280193",
+            DisplayName = "Hakari Dance",
+            ModuleName = "HakariDance",
+            SFX = "rbxassetid://109474987384441"
+        },
+        ["Griddy"] = {
+            AssetID = "rbxassetid://93821902607346",
+            DisplayName = "Griddy",
+            ModuleName = "Griddy",
+            SFX = "rbxassetid://121568618582505"
+        },
+        ["GangnamStyle"] = {
+            AssetID = "rbxassetid://134617723143543",
+            DisplayName = "Gangnam",
+            ModuleName = "GangnamStyle",
+            SFX = "rbxassetid://86963552203595"
+        },
+        ["Fly"] = {
+            AssetID = "rbxassetid://121751474249467",
+            DisplayName = "House Fly",
+            ModuleName = "Fly",
+            SFX = "rbxassetid://93499899807341"
+        },
+        ["Eggrolled"] = {
+            AssetID = "rbxassetid://93910549909381",
+            DisplayName = "Eggrolled",
+            ModuleName = "Eggrolled",
+            SFX = "rbxassetid://131274843582926"
+        },
+        ["Drumsticks"] = {
+            AssetID = "rbxassetid://124289084579824",
+            DisplayName = "Drumsticks",
+            ModuleName = "Drumsticks",
+            SFX = "rbxassetid://79545773891548"
+        },
+        ["DistractionDance"] = {
+            AssetID = "rbxassetid://98261071866527",
+            DisplayName = "Distraction Dance",
+            ModuleName = "DistractionDance",
+            SFX = "nil"
+        },
+        ["Conga"] = {
+            AssetID = "rbxassetid://91143438316049",
+            DisplayName = "Conga",
+            ModuleName = "Conga",
+            SFX = "rbxassetid://104396878120843"
+        },
+        ["Cinderella"] = {
+            AssetID = "rbxassetid://92131061687307",
+            DisplayName = "Cinderella",
+            ModuleName = "Cinderella",
+            SFX = "rbxassetid://122795302561110"
+        },
+        ["Chrono"] = {
+            AssetID = "rbxassetid://95008278201478",
+            DisplayName = "Chronoshift",
+            ModuleName = "Chrono",
+            SFX = "rbxassetid://137501116290172"
+        },
+        ["Chicken"] = {
+            AssetID = "rbxassetid://135702316328204",
+            DisplayName = "Chicken Dance",
+            ModuleName = "Chicken",
+            SFX = "rbxassetid://104235713087821"
+        },
+        ["Carried"] = {
+            AssetID = "rbxassetid://139133319221924",
+            DisplayName = "Best Survivor",
+            ModuleName = "Carried",
+            SFX = "rbxassetid://121216788631381"
+        },
+        ["Caramell"] = {
+            AssetID = "rbxassetid://110731222089592",
+            DisplayName = "Caramell",
+            ModuleName = "Caramell",
+            SFX = "rbxassetid://127550001365624"
+        },
+        ["CaliforniaGirls"] = {
+            AssetID = "rbxassetid://121768360244671",
+            DisplayName = "California Girls",
+            ModuleName = "CaliforniaGirls",
+            SFX = "rbxassetid://93139857397485"
+        },
+        ["CCShimmy"] = {
+            AssetID = "rbxassetid://79878932144855",
+            DisplayName = "Knightly Shimmy",
+            ModuleName = "CCShimmy",
+            SFX = "rbxassetid://127271208525796"
+        },
+        ["ByeBye"] = {
+            AssetID = "rbxassetid://113658683375139",
+            DisplayName = "Bye Bye",
+            ModuleName = "ByeBye",
+            SFX = "rbxassetid://100874539180945"
+        },
+        ["Brickbattler"] = {
+            AssetID = "rbxassetid://75802192289302",
+            DisplayName = "Brickbattler",
+            ModuleName = "Brickbattler",
+            SFX = "rbxassetid://87794061271458"
+        },
+        ["BagUp"] = {
+            AssetID = "rbxassetid://117853129871362",
+            DisplayName = "Bag Up",
+            ModuleName = "BagUp",
+            SFX = "rbxassetid://133954185831066"
+        },
+        ["AshleyLookAtMe"] = {
+            AssetID = "rbxassetid://138857297031173",
+            DisplayName = "Ashley",
+            ModuleName = "AshleyLookAtMe",
+            SFX = "rbxassetid://105173273800950"
+        },
+        ["AolGuy"] = {
+            AssetID = "rbxassetid://80918082366233",
+            DisplayName = "Aol Guy",
+            ModuleName = "AolGuy",
+            SFX = "rbxassetid://92483550196470"
+        },
+        ["AintNoLovinMyMan"] = {
+            AssetID = "rbxassetid://113329473982836",
+            DisplayName = "Ain't No Lovin My Man",
+            ModuleName = "AintNoLovinMyMan",
+            SFX = "rbxassetid://92797787946449"
+        },
+        ["AICatDance"] = {
+            AssetID = "rbxassetid://133145243088885",
+            DisplayName = "Cat Dance",
+            ModuleName = "AICatDance",
+            SFX = "rbxassetid://75850411329107"
+        },
+        ["Rambunctious"] = {
+            AssetID = "rbxassetid://134229395028226",
+            DisplayName = "Rambunctious",
+            ModuleName = "Rambunctious",
+            SFX = "rbxassetid://78302710217332"
+        },
+        ["GleeCo"] = {
+            AssetID = "rbxassetid://79863122388790",
+            DisplayName = "GLEE CO.",
+            ModuleName = "GleeCo",
+            SFX = "rbxassetid://106653499906945"
+        },
+        ["_ReleaseTheGhouls"] = {
+            AssetID = "rbxassetid://122400298085954",
+            DisplayName = "Release The Ghouls",
+            ModuleName = "_ReleaseTheGhouls",
+            SFX = "rbxassetid://140379868363274"
+        },
+        ["_FunnyRambunctious"] = {
+            AssetID = "rbxassetid://134229395028226",
+            DisplayName = "Rambunctious but funny",
+            ModuleName = "_FunnyRambunctious",
+            SFX = "rbxassetid://70630630341725"
+        },
+    };
     GG.ATKAnimsFors = GG.ATKAnimsFors or {
         'rbxassetid://131430497821198', --// MassInfection, 1x1x1x1
         'rbxassetid://83829782357897', --// Slash, 1x1x1x1
@@ -15132,7 +15520,7 @@ if type(GG.AssetStorage) == 'nil' then
     end;
     AssetStorage.AI = function()
         GG.AI_Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-        GG.BaseInfo = HttpGet("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/A.txt");
+        GG.BaseInfo = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/A.txt");
         GG.AI_Body = {
             contents = {
                 {
@@ -15298,6 +15686,12 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
         "Discord : discord.gg/c8cUR6Unay",
         "contact"
     );
+
+    ScriptCache.HandleUNC = {
+        Title = "Locked Feature",
+        Desc = "This function is an internal function, Please change your executor in order to use this feature.",
+        Callback = function() end
+    };
 end;
 
 ------------- Script Asset / Script Cache 2 -------------
@@ -15620,6 +16014,7 @@ else
         [6057699512] = "0e276aee6d45d0189d01c76758d7f1e3";
         [6331902150] = "12f176c70499dbab6db5ce9c797321a4";
         [1176784616] = "206bb6455d24407721627649fe7fc3c5";
+        [7344582593] = "faf6c54cb8f00ebe9bdbd55a4fb6a643";
     };
 
     local FreeCLoad = {
