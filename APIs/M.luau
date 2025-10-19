@@ -4,6 +4,10 @@ if not game:IsLoaded() then
     game.Loaded:Wait();
 end;
 
+if true then
+    return game:GetService("Players").LocalPlayer:Kick("Script is updating, please comeback soon");
+end;
+
 if loaded then
     if WindUI then
         return WindUI:Notify({
