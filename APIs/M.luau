@@ -43,7 +43,7 @@ GG.GG = GG;
 
 GG.LoaderSettings = (LoaderSettings and LoaderSettings.ExecutedByUser and LoaderSettings) or {
     AllowCache = true; -- Will Cache All Script files & Assets
-    AllowKickWithError = true; -- Once the script error exceed limit, it will kick instead of log in console
+    AllowKickWithError = false; -- Once the script error exceed limit, it will kick instead of log in console
 
     AllowPlayerTab = true; -- Enable Tab.Player
     AllowAI = true; -- Enable Tab.AI
@@ -71,7 +71,7 @@ end;
 
 ------------- Replicated First -------------
 
-if not GG.ReplicatedFirst_lc then
+if not ReplicatedFirst_lc then
     GG.setc = setclipboard or toclipboard or function(...) return warn(...); end;
 
     GG.getinfo = getinfo or debug.getinfo;
@@ -147,6 +147,9 @@ if not GG.ReplicatedFirst_lc then
         tconcat = tble.concat;
         tunpack = tble.unpack;
         tabler = tble.remove;
+        tEach = tble.foreach;
+
+        RNew = Random.new;
 
         twait = tk.wait;
         tdefer = tk.tdefer;
@@ -272,11 +275,41 @@ if not GG.ReplicatedFirst_lc then
         CSnew = ColorSequence.new;
         CSKnew = ColorSequenceKeypoint.new;
 
+        breadf64 = bff and bff.readf64;
+        breadu32 = bff and bff.readu32;
+        btostring = bff and bff.tostring;
+        breadi8 = bff and bff.readi8;
+        breadu16 = bff and bff.readu16;
+        bcopy = bff and bff.copy;
+        breadu8 = bff and bff.readu8;
+        bwritebits = bff and bff.writebits;
+        bwritei16 = bff and bff.writei16;
+        bwriteu16 = bff and bff.writeu16;
         bfromstring = bff and bff.fromstring;
+        bwritef32 = bff and bff.writef32;
+        breadi32 = bff and bff.readi32;
+        bfill = bff and bff.fill;
+        bwriteu32 = bff and bff.writeu32;
+        bwriteu8 = bff and bff.writeu8;
+        bcreate = bff and bff.create;
+        bwritestring = bff and bff.writestring;
+        bwritei8 = bff and bff.writei8;
+        breadbits = bff and bff.readbits;
+        breadi16 = bff and bff.readi16;
+        bwritef64 = bff and bff.writef64;
+        blen = bff and bff.len;
+        bwritei32 = bff and bff.writei32;
+        breadstring = bff and bff.readstring;
+        breadf32 = bff and bff.readf32;
         
         LowerC = hookfunction or hookfunc;
         UpperC = hookmetamethod;
         ResetC = restorefunction;
+
+        oclock = os.clock;
+        odiff = os.difftime;
+        otime = os.time;
+        odate = os.date;
 
         queueOT = queueonteleport or queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or on_teleport;
     };
@@ -378,6 +411,11 @@ for i=1, 3 do
             PivotTo = W.PivotTo;
 
             IsA = game.IsA;
+            Clone = game.Clone;
+            GetFullName = game.GetFullName;
+            GetPlayers = P.GetPlayers;
+
+            TwCreate = TweenService.Create;
 
             GetAttribute = game.GetAttribute;
             SetAttribute = game.SetAttribute;
@@ -449,6 +487,2159 @@ ScriptCache.userIdentify.unc_infos = {
     request = (request and getinfo(request).what) or false;
     getgc = (getgc and getinfo(getgc).what) or false;
 };
+
+GG.loadsource = function(source:string):any
+    for attempt = 1, 3 do
+        local suc, res = pcal(function() return loadstring(source)(); end);
+        if suc then
+            return res;
+        else
+            warn(strformat(ScriptCache.CommonString.loscr, attempt, result)); twait();
+        end;
+    end;
+end;
+
+GG.loadScriptFromCache = function(srcName, fileName, noload, custom_time, is_ignore)
+    if LoaderSettings.AllowCache then
+        if not isfolder("FlowXS") then
+            return Kick(selff, "isfolder check failed, try rejoining before reporting the bug");
+        end;
+
+        local CD = custom_time or 600;
+        local versionFile = "FlowXSVersion.json";
+        local cacheFile = "FlowXS/" .. fileName;
+        local no_write = is_ignore;
+
+        GG.ALLVersion = ALLVersion or {};
+        ALLVersion[fileName] = ALLVersion[fileName] or tos(tick());
+
+        local function refresh()
+            local source = HttpGet(game, srcName);
+            ALLVersion[fileName] = tos(tick());
+            writefile(cacheFile, source);
+            if not no_write then
+                writefile(versionFile, EnCodeJ(HttpService, ALLVersion));
+            end;
+            return source;
+        end;
+
+        if tick() - ton(ALLVersion[fileName]) >= CD then
+            warn("[VULNX] : Loaded " .. fileName .. " from GitHub via auto-update");
+            local s = refresh();
+            return noload and s or loadsource(s);
+        end;
+
+        local cachedSource = isfile(cacheFile) and readfile(cacheFile);
+        if not cachedSource or not isfile(versionFile) then
+            warn("[VULNX] : Loaded " .. fileName .. " from GitHub");
+            local s = refresh();
+            return noload and s or loadsource(s);
+        end;
+
+        warn("[VULNX] : Loaded " .. fileName .. " from device and NOT GitHub");
+        return noload and cachedSource or loadsource(cachedSource);
+    else
+        local source = HttpGet(game, srcName);
+        warn("[VULNX] : Loaded " .. fileName .. " via nowrite.2");
+        return noload and source or loadsource(source);
+    end;
+end;
+
+------------- Script Asset / Script Cache 1 -------------
+
+GG.AssetStorage = {};
+AssetStorage.Languages = function(): nil
+    if ScriptCache.Languages then return; end;
+    if GameId == 1 then
+        ScriptCache.Languages = {
+            {
+                Key = "Hello",
+                Values = {
+                    ["en"] = "Hello",
+                    ["th"] = "สวัสดี"
+                };
+            };
+        };
+    end;
+end;
+AssetStorage.Localization = function(): nil
+    if SetUpLanguage and ApplyLanguage then return; end; 
+    GG.SetUpLanguage = function(entries:{[nil]:{Key:string,Values:{[string]:string}}}): nil
+        ScriptCache.localTable = (ScriptCache.localTable and ScriptCache.localTable.Parent and ScriptCache.localTable) or Instancen("LocalizationTable", W);
+        ScriptCache.localTable.DevelopmentLanguage = LocalizationService.SystemLocaleId;
+        ScriptCache.localTable:SetEntries(entries);
+    end;
+    GG.ApplyLanguage = function(lang:string,word:string): string
+        return ScriptCache.localTable:GetString(lang, word);
+    end;
+end;
+AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
+    if CommonF then return; end; GG.CommonF = {};
+    function CommonF:TableToIndex(indexTable:{[any]:any},...): {[nil]:any}
+        if not indexTable then return {}; end;
+        local NewTBL:{[nil]:any} = {}; for i,v in pir(indexTable) do
+            tablein(NewTBL,i);
+        end; return newTable
+    end;
+    function CommonF:SKey(key:Enum,...): nil
+        return VirtualInputManager:SendKeyEvent(true, key, false, game);
+    end;
+    function CommonF:OffKey(key:Enum,...): nil
+        return VirtualInputManager:SendKeyEvent(false, key, false, game);
+    end;
+    function CommonF:CallKey(key:Enum,c:number?,...): nil
+        return self:SKey(key), twait(c or 0), self:OffKey(key);
+    end;
+    function CommonF:RefreshPlayer()
+        local tbl:{string}={};
+        for _,v in pir(GetPlayers(P)) do
+            tablein(tbl, v.Name);
+        end; return tbl;
+    end;
+    function CommonF:GetTime(...): string
+        local currentTime:number=L.ClockTime;
+        if currentTime >= 6 and currentTime < 18 then
+            return "Day";
+        else
+            return "Night";
+        end;
+    end;
+    function CommonF:ReadDate(...): string
+        return odate("%Y-%m-%d %H:%M:%S", otime()) .. " +07:00";
+    end;
+    function CommonF:LTech(tech:string,...): nil
+        L.Technology = Enum.Technology[tech];
+    end;
+    function CommonF:HumanoidEquip(Tool:Tool): nil
+        if not Tool or not selc or not Tool.Parent or not Tool.Parent.Parent then return; end;
+        local Humanoid:Humanoid = FindFirstChildOfClass(selc, "Humanoid");
+        return Humanoid and Humanoid:EquipTool(Tool);
+    end;
+    function CommonF:Tp(cf:CFrame,t:number,...): nil
+        if not HumRSelf or not cf then return; end;
+        HumRSelf.CFrame = cf;
+        return twait(t);
+    end;
+    function CommonF:Anchored(bool:boolean): nil
+        if not HumRSelf then return; end;
+        HumRSelf.Anchored = bool;
+    end;
+    function CommonF:UpdateClientState(which:string): any
+        if which == "Noclip" then
+            return function( enable : boolean ): nil
+                if not enable or not selc or not selc.Parent then return; end;
+                for _, child in pir(GetDescendants(selc)) do
+                    if IsA(child, "BasePart") and child.Name ~= "bobber" then
+                        child.CanCollide = false;
+                    end;
+                end;
+            end;
+        end;
+    end;
+
+    return CommonF;
+end;
+AssetStorage.GraphicsPlay = function(...): {[string]:(any)->(...any)}
+    if GCP then return; end; GG.GCP = {};
+    function GCP:ApplyLowest(className:string,at:Instance): nil
+        if not at or not at.Parent then return; end;
+    end;
+    function GCP:ApplyAll(at:Instance,method:string,fors:{string}): nil
+        for i,v in pir((method=="Descendants" and GetDescendants(at)) or (method=="Children" and GetChildren(at))) do
+            if tablef(fors, v.ClassName) then
+                self:ApplyLowest(v.ClassName, v);
+            end;
+        end;
+    end;
+end;
+AssetStorage.ESPModl = function(...): {[string]:(any)->(...any)}?
+    local ESPF = {};
+    function ESPF:Clear()
+        for _, v in pir(GG.ESPT) do
+            if v and v.Parent then
+                Destroy(v, true);
+            end;
+        end;
+    end;
+    function ESPF:CreateBox(obj:Instance,dat:{targetObj:Instance,Color:Color3,Size:Vector3,isneed:boolean}): BoxHandleAdornment
+        local Box:BoxHandleAdornment = Instancen("BoxHandleAdornment", dat.targetObj);
+        Box.Color3 = dat.Color;
+        Box.AlwaysOnTop = true;
+        Box.Size = dat.Size;
+        Box.Transparency = 0.5;
+        Box.Adornee = dat.targetObj;
+        Box.ZIndex = 1;
+
+        local Billboard:BillboardGui = Instancen("BillboardGui", dat.targetObj);
+        Billboard.Adornee = dat.targetObj;
+        Billboard.AlwaysOnTop = true;
+        Billboard.Size = Dim2(0, 100, 0, 30);
+        Billboard.StudsOffset = Vec3(0, dat.Size.Y/2 + 1, 0);
+
+        local Label:TextLabel = Instancen("TextLabel", Billboard);
+        Label.Size = Dim2(1, 0, 1, 0);
+        Label.BackgroundTransparency = 1;
+        Label.Text = obj.Name;
+        Label.TextColor3 = dat.Color;
+        Label.TextStrokeTransparency = 0.2;
+        Label.Font = Enum.Font.SourceSansBold;
+        Label.TextScaled = true;
+
+        tablein(ESPT, Box);
+        tablein(ESPT, Billboard);
+
+        return Box;
+    end;
+    function ESPF:ESP(obj:Instance,Color:Color3,Size:Vector3,isneed:boolean): nil
+        if not obj or typeof(obj) ~= 'Instance' then return; end;
+        local dat = {
+            targetObj = nil;
+            Color = Color or fromRGB(255,255,255);
+            Size = Size or Vec3(5,5,5);
+            isneed = isneed or false;
+        };
+
+        if dat.isneed then
+            if IsA(obj, "Model") then
+                dat.targetObj = FindFirstChild(obj, "HumanoidRootPart") or FindFirstChild(obj, "RootPart");
+                if not dat.targetObj then
+                    dat.targetObj = FindFirstChildWhichIsA(obj, "BasePart", true);
+                end;
+            end;
+        end;
+
+        dat.targetObj = dat.targetObj or obj;
+        if not dat.targetObj then return; end;
+
+        return self:CreateBox(obj, dat);
+    end;
+    return ESPF;
+end;
+AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
+    local Windy:{[string]:(any)->(...any)} = {};
+    function Windy:UITracking( key : number ): any
+        if key == 1 then
+            return function()
+                if ScriptCache.Window then
+                    return ScriptCache.Window.Destroyed;
+                end;
+            end;
+        end;
+    end;
+    function Windy:AutoSetupToggle(a:tab,b:{any},c:any): {[string]:any}
+        ScriptCache.NewToggle = a:Toggle(b);
+        if c then ScriptCache.NewToggle:Set(c); end;
+        ScriptCache.PanicConnect[#ScriptCache.PanicConnect + 1] = ScriptCache.NewToggle;
+        return ScriptCache.NewToggle;
+    end;
+    function Windy:AutoSetupKeybind(a:tab,b:{any},c:any): {[string]:any}
+        b.Value = c.Key.Name;
+        ScriptCache.NewKeybind = a:Keybind(b);
+        return ScriptCache.NewKeybind;
+    end;
+    function Windy:IsGamePause(wind): any
+        if not selff.GameplayPaused or ScriptCache.AlreadyNotifyPause then return; end;
+        ScriptCache.AlreadyNotifyPause = true;
+        return tspawn(function()
+            wind:Notify({
+                Title = "<font color='rgb(255,0,0)'>ALERT</font>",
+                Content = "YOUR GAMEPLAY HAS BEEN PAUSE. Script is waiting until this problem is fully fix or gameplay load.",
+                Icon = "circle-alert",
+                Duration = 20,
+            });
+            twait(20); ScriptCache.AlreadyNotifyPause = false;
+        end);
+    end;
+    function Windy:PairsAddOn(tab : tab , addOn : () -> () ): any
+        tab:Paragraph({ Title = "Introduction", Desc = "This is the AddOn tab, a place for users who know coding to create their own scripts. Remember, any addon can be risky as it is not from the official VULX Script. Our documentation is available at gitbook.com/vulx, and you can find more addons on our Discord server." });
+        return AddOnF(tab, windUI, function()
+            return SystemStackDestroy;
+        end);
+    end;
+end;
+AssetStorage.Key = function(): nil
+    GG.UploadToGlobal_Key = GG.UploadToGlobal_Key or function( arg : {} )
+        local emptyfunction = function(...) return; end;
+        local modules : {} = {};
+        function modules:newCopy()
+            local G2L = {};
+            G2L["1"] = Instancen("ScreenGui", C);
+            G2L["1"].IgnoreGuiInset = true;
+            G2L["1"].ScreenInsets= Enum.ScreenInsets.None;
+            G2L["1"].Name= "MultiKey";
+            G2L["1"].ZIndexBehavior= Enum.ZIndexBehavior.Sibling;
+            G2L["1"].ResetOnSpawn= false;
+        
+            G2L["2"] = Instancen("ImageLabel", G2L["1"]);
+            G2L["2"].ZIndex= 9999;
+            G2L["2"].BorderSizePixel= 0;
+            G2L["2"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2"].SliceScale= 0.08594;
+            G2L["2"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2"].AutomaticSize= Enum.AutomaticSize.XY;
+            G2L["2"].ImageColor3= fromRGB(25, 25, 28);
+            G2L["2"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["2"].Image= "rbxassetid://80999662900595";
+            G2L["2"].BackgroundTransparency= 1;
+            G2L["2"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["3"] = Instancen("Frame", G2L["2"]);
+            G2L["3"].ZIndex= 99999;
+            G2L["3"].BorderSizePixel= 0;
+            G2L["3"].BackgroundColor3= fromRGB(25, 25, 28);
+            G2L["3"].AutomaticSize= Enum.AutomaticSize.Y;
+            G2L["3"].Size= Dim2(0, 430, 0, 0);
+            G2L["3"].BackgroundTransparency= 1;
+        
+            G2L["4"] = Instancen("UIPadding", G2L["3"]);
+        
+            G2L["5"] = Instancen("Frame", G2L["3"]);
+            G2L["5"].BorderSizePixel= 0;
+            G2L["5"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["5"].Size= Dim2(1, 0, 1, 0);
+            G2L["5"].BackgroundTransparency= 1;
+        
+            G2L["6"] = Instancen("Frame", G2L["5"]);
+            G2L["6"].BorderSizePixel= 0;
+            G2L["6"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["6"].Size= Dim2(1, 0, 1, 0);
+            G2L["6"].BackgroundTransparency= 1;
+        
+            G2L["7"] = Instancen("UIListLayout", G2L["6"]);
+            G2L["7"].Padding= Dim(0, 18);
+            G2L["7"].SortOrder= Enum.SortOrder.LayoutOrder;
+        
+            G2L["8"] = Instancen("Frame", G2L["6"]);
+            G2L["8"].BorderSizePixel= 0;
+            G2L["8"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["8"].AutomaticSize= Enum.AutomaticSize.Y;
+            G2L["8"].Size= Dim2(1, 0, 0, 0);
+            G2L["8"].BackgroundTransparency= 1;
+        
+            G2L["9"] = Instancen("Frame", G2L["8"]);
+            G2L["9"].BorderSizePixel= 0;
+            G2L["9"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["9"].AutomaticSize= Enum.AutomaticSize.XY;
+            G2L["9"].BackgroundTransparency= 1;
+        
+            G2L.a= Instancen("UIListLayout", G2L["9"]);
+            G2L.a.Padding= Dim(0, 14);
+            G2L.a.VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L.a.SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L.a.FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L.b= Instancen("Frame", G2L["9"]);
+            G2L.b.BorderSizePixel= 0;
+            G2L.b.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.b.Size= Dim2(0, 24, 0, 24);
+            G2L.b.LayoutOrder= -1;
+            G2L.b.BackgroundTransparency= 1;
+        
+            G2L.c= Instancen("ImageLabel", G2L.b);
+            G2L.c.BorderSizePixel= 0;
+            G2L.c.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.c.ScaleType= Enum.ScaleType.Crop;
+            G2L.c.Image= "rbxassetid://77771201330939";
+            G2L.c.ImageRectSize= Vec2(96, 96);
+            G2L.c.Size= Dim2(1, 0, 1, 0);
+            G2L.c.BackgroundTransparency= 1;
+            G2L.c.ImageRectOffset= Vec2(0, 768);
+        
+        
+            G2L.d= Instancen("UICorner", G2L.c);
+            G2L.d.CornerRadius= Dim(0, 18);
+        
+            G2L.e= Instancen("TextLabel", G2L["9"]);
+            G2L.e.BorderSizePixel= 0;
+            G2L.e.TextSize= 20;
+            G2L.e.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.e.FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L.e.TextColor3= fromRGB(255, 255, 255);
+            G2L.e.BackgroundTransparency= 1;
+            G2L.e.RichText= true;
+            G2L.e.Text= "Select Service";
+            G2L.e.AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L.f= Instancen("Frame", G2L["6"]);
+            G2L.f.BorderSizePixel= 0;
+            G2L.f.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.f.Size= Dim2(1, 0, 0, 42);
+            G2L.f.BackgroundTransparency= 1;
+        
+            G2L["10"] = Instancen("UIListLayout", G2L.f);
+            G2L["10"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["10"].Padding= Dim(0, 9);
+            G2L["10"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["10"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["11"] = Instancen("TextButton", G2L.f);
+            G2L["11"].BorderSizePixel= 0;
+            G2L["11"].TextColor3= fromRGB(255, 255, 255);
+            G2L["11"].AutoButtonColor= false;
+            G2L["11"].TextSize= 14;
+            G2L["11"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["11"].Size= Dim2(0.45, 0, 1, 0);
+            G2L["11"].BackgroundTransparency= 1;
+            G2L["11"].LayoutOrder= 2;
+            G2L["11"].Text= "";
+            G2L["11"].Position= Dim2(-0.00377, 0, 0, 0);
+        
+            G2L["12"] = Instancen("ImageLabel", G2L["11"]);
+            G2L["12"].BorderSizePixel= 0;
+            G2L["12"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["12"].SliceScale= 0.03906;
+            G2L["12"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["12"].ScaleType= Enum.ScaleType.Slice;
+            G2L["12"].ImageTransparency= 1;
+            G2L["12"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["12"].Image= "rbxassetid://80999662900595";
+            G2L["12"].Size= Dim2(1, 0, 1, 0);
+            G2L["12"].BackgroundTransparency= 1;
+            G2L["12"].Name= "Squircle";
+        
+            G2L["13"] = Instancen("ImageLabel", G2L["11"]);
+            G2L["13"].BorderSizePixel= 0;
+            G2L["13"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["13"].SliceScale= 0.03906;
+            G2L["13"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["13"].ScaleType= Enum.ScaleType.Slice;
+            G2L["13"].ImageTransparency= 0.95;
+            G2L["13"].Image= "rbxassetid://80999662900595";
+            G2L["13"].Size= Dim2(1, 0, 1, 0);
+            G2L["13"].BackgroundTransparency= 1;
+            G2L["13"].Name= "Special";
+        
+            G2L["14"] = Instancen("ImageLabel", G2L["11"]);
+            G2L["14"].BorderSizePixel= 0;
+            G2L["14"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["14"].SliceScale= 0.01953;
+            G2L["14"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["14"].ScaleType= Enum.ScaleType.Slice;
+            G2L["14"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["14"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["14"].Image= "rbxassetid://84825982946844";
+            G2L["14"].Size= Dim2(1, 3, 1, 3);
+            G2L["14"].BackgroundTransparency= 1;
+            G2L["14"].Name= "Shadow";
+            G2L["14"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["15"] = Instancen("ImageLabel", G2L["11"]);
+            G2L["15"].BorderSizePixel= 0;
+            G2L["15"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["15"].SliceScale= 0.03906;
+            G2L["15"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["15"].ScaleType= Enum.ScaleType.Slice;
+            G2L["15"].ImageTransparency= 0.85;
+            G2L["15"].Image= "rbxassetid://117788349049947";
+            G2L["15"].Size= Dim2(1, 0, 1, 0);
+            G2L["15"].BackgroundTransparency= 1;
+        
+            G2L["16"] = Instancen("ImageLabel", G2L["11"]);
+            G2L["16"].BorderSizePixel= 0;
+            G2L["16"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["16"].SliceScale= 0.03906;
+            G2L["16"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["16"].ScaleType= Enum.ScaleType.Slice;
+            G2L["16"].ImageTransparency= 1;
+            G2L["16"].Image= "rbxassetid://80999662900595";
+            G2L["16"].Size= Dim2(1, 0, 1, 0);
+            G2L["16"].BackgroundTransparency= 1;
+            G2L["16"].Name= "Frame";
+        
+            G2L["17"] = Instancen("UIPadding", G2L["16"]);
+            G2L["17"].PaddingRight= Dim(0, 12);
+            G2L["17"].PaddingLeft= Dim(0, 12);
+        
+            G2L["18"] = Instancen("UIListLayout", G2L["16"]);
+            G2L["18"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["18"].Padding= Dim(0, 8);
+            G2L["18"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["18"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["18"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["19"] = Instancen("TextLabel", G2L["16"]);
+            G2L["19"].BorderSizePixel= 0;
+            G2L["19"].TextSize= 18;
+            G2L["19"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["19"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["19"].TextColor3= fromRGB(255, 255, 255);
+            G2L["19"].BackgroundTransparency= 1;
+            G2L["19"].RichText= true;
+            G2L["19"].Text= "Linkvertise";
+            G2L["19"].AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L["1a"] = Instancen("TextButton", G2L.f);
+            G2L["1a"].BorderSizePixel= 0;
+            G2L["1a"].TextColor3= fromRGB(255, 255, 255);
+            G2L["1a"].AutoButtonColor= false;
+            G2L["1a"].TextSize= 14;
+            G2L["1a"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1a"].Size= Dim2(0.45, 0, 1, 0);
+            G2L["1a"].BackgroundTransparency= 1;
+            G2L["1a"].LayoutOrder= 2;
+            G2L["1a"].Text= "";
+            G2L["1a"].Position= Dim2(-0.00377, 0, 0, 0);
+        
+            G2L["1b"] = Instancen("ImageLabel", G2L["1a"]);
+            G2L["1b"].BorderSizePixel= 0;
+            G2L["1b"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1b"].SliceScale= 0.03906;
+            G2L["1b"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1b"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1b"].ImageTransparency= 1;
+            G2L["1b"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["1b"].Image= "rbxassetid://80999662900595";
+            G2L["1b"].Size= Dim2(1, 0, 1, 0);
+            G2L["1b"].BackgroundTransparency= 1;
+            G2L["1b"].Name= "Squircle";
+        
+            G2L["1c"] = Instancen("ImageLabel", G2L["1a"]);
+            G2L["1c"].BorderSizePixel= 0;
+            G2L["1c"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1c"].SliceScale= 0.03906;
+            G2L["1c"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1c"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1c"].ImageTransparency= 0.95;
+            G2L["1c"].Image= "rbxassetid://80999662900595";
+            G2L["1c"].Size= Dim2(1, 0, 1, 0);
+            G2L["1c"].BackgroundTransparency= 1;
+            G2L["1c"].Name= "Special";
+        
+            G2L["1d"] = Instancen("ImageLabel", G2L["1a"]);
+            G2L["1d"].BorderSizePixel= 0;
+            G2L["1d"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["1d"].SliceScale= 0.01953;
+            G2L["1d"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1d"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1d"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["1d"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["1d"].Image= "rbxassetid://84825982946844";
+            G2L["1d"].Size= Dim2(1, 3, 1, 3);
+            G2L["1d"].BackgroundTransparency= 1;
+            G2L["1d"].Name= "Shadow";
+            G2L["1d"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["1e"] = Instancen("ImageLabel", G2L["1a"]);
+            G2L["1e"].BorderSizePixel= 0;
+            G2L["1e"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1e"].SliceScale= 0.03906;
+            G2L["1e"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1e"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1e"].ImageTransparency= 0.85;
+            G2L["1e"].Image= "rbxassetid://117788349049947";
+            G2L["1e"].Size= Dim2(1, 0, 1, 0);
+            G2L["1e"].BackgroundTransparency= 1;
+        
+            G2L["1f"] = Instancen("ImageLabel", G2L["1a"]);
+            G2L["1f"].BorderSizePixel= 0;
+            G2L["1f"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1f"].SliceScale= 0.03906;
+            G2L["1f"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1f"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1f"].ImageTransparency= 1;
+            G2L["1f"].Image= "rbxassetid://80999662900595";
+            G2L["1f"].Size= Dim2(1, 0, 1, 0);
+            G2L["1f"].BackgroundTransparency= 1;
+            G2L["1f"].Name= "Frame";
+        
+            G2L["20"] = Instancen("UIPadding", G2L["1f"]);
+            G2L["20"].PaddingRight= Dim(0, 12);
+            G2L["20"].PaddingLeft= Dim(0, 12);
+        
+            G2L["21"] = Instancen("UIListLayout", G2L["1f"]);
+            G2L["21"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["21"].Padding= Dim(0, 8);
+            G2L["21"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["21"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["21"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["22"] = Instancen("TextLabel", G2L["1f"]);
+            G2L["22"].BorderSizePixel= 0;
+            G2L["22"].TextSize= 18;
+            G2L["22"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["22"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["22"].TextColor3= fromRGB(255, 255, 255);
+            G2L["22"].BackgroundTransparency= 1;
+            G2L["22"].RichText= true;
+            G2L["22"].Text= "-";
+            G2L["22"].AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L["23"] = Instancen("UIPadding", G2L["6"]);
+            G2L["23"].PaddingTop= Dim(0, 16);
+            G2L["23"].PaddingRight= Dim(0, 16);
+            G2L["23"].PaddingLeft= Dim(0, 16);
+            G2L["23"].PaddingBottom= Dim(0, 16);
+        
+            G2L["24"] = Instancen("Frame", G2L["6"]);
+            G2L["24"].BorderSizePixel= 0;
+            G2L["24"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["24"].Size= Dim2(1, 0, 0, 42);
+            G2L["24"].LayoutOrder= 100;
+            G2L["24"].BackgroundTransparency= 1;
+        
+            G2L["25"] = Instancen("UIListLayout", G2L["24"]);
+            G2L["25"].HorizontalAlignment= Enum.HorizontalAlignment.Right;
+            G2L["25"].Padding= Dim(0, 9);
+            G2L["25"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["25"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["26"] = Instancen("TextButton", G2L["24"]);
+            G2L["26"].BorderSizePixel= 0;
+            G2L["26"].TextColor3= fromRGB(255, 255, 255);
+            G2L["26"].AutoButtonColor= false;
+            G2L["26"].TextSize= 14;
+            G2L["26"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["26"].AutomaticSize= Enum.AutomaticSize.X;
+            G2L["26"].Size= Dim2(0, 0, 1, 0);
+            G2L["26"].BackgroundTransparency= 1;
+            G2L["26"].LayoutOrder= 2;
+            G2L["26"].Text= "";
+        
+            G2L["27"] = Instancen("ImageLabel", G2L["26"]);
+            G2L["27"].BorderSizePixel= 0;
+            G2L["27"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["27"].SliceScale= 0.03906;
+            G2L["27"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["27"].ScaleType= Enum.ScaleType.Slice;
+            G2L["27"].ImageTransparency= 1;
+            G2L["27"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["27"].Image= "rbxassetid://80999662900595";
+            G2L["27"].Size= Dim2(1, 0, 1, 0);
+            G2L["27"].BackgroundTransparency= 1;
+            G2L["27"].Name= "Squircle";
+        
+            G2L["28"] = Instancen("ImageLabel", G2L["26"]);
+            G2L["28"].BorderSizePixel= 0;
+            G2L["28"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["28"].SliceScale= 0.03906;
+            G2L["28"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["28"].ScaleType= Enum.ScaleType.Slice;
+            G2L["28"].ImageTransparency= 0.95;
+            G2L["28"].Image= "rbxassetid://80999662900595";
+            G2L["28"].Size= Dim2(1, 0, 1, 0);
+            G2L["28"].BackgroundTransparency= 1;
+            G2L["28"].Name= "Special";
+        
+            G2L["29"] = Instancen("ImageLabel", G2L["26"]);
+            G2L["29"].BorderSizePixel= 0;
+            G2L["29"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["29"].SliceScale= 0.01953;
+            G2L["29"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["29"].ScaleType= Enum.ScaleType.Slice;
+            G2L["29"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["29"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["29"].Image= "rbxassetid://84825982946844";
+            G2L["29"].Size= Dim2(1, 3, 1, 3);
+            G2L["29"].BackgroundTransparency= 1;
+            G2L["29"].Name= "Shadow";
+            G2L["29"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["2a"] = Instancen("ImageLabel", G2L["26"]);
+            G2L["2a"].BorderSizePixel= 0;
+            G2L["2a"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2a"].SliceScale= 0.03906;
+            G2L["2a"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2a"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2a"].ImageTransparency= 0.85;
+            G2L["2a"].Image= "rbxassetid://117788349049947";
+            G2L["2a"].Size= Dim2(1, 0, 1, 0);
+            G2L["2a"].BackgroundTransparency= 1;
+        
+            G2L["2b"] = Instancen("ImageLabel", G2L["26"]);
+            G2L["2b"].BorderSizePixel= 0;
+            G2L["2b"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2b"].SliceScale= 0.03906;
+            G2L["2b"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2b"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2b"].ImageTransparency= 1;
+            G2L["2b"].Image= "rbxassetid://80999662900595";
+            G2L["2b"].Size= Dim2(1, 0, 1, 0);
+            G2L["2b"].BackgroundTransparency= 1;
+            G2L["2b"].Name= "Frame";
+        
+            G2L["2c"] = Instancen("UIPadding", G2L["2b"]);
+            G2L["2c"].PaddingRight= Dim(0, 12);
+            G2L["2c"].PaddingLeft= Dim(0, 12);
+        
+            G2L["2d"] = Instancen("UIListLayout", G2L["2b"]);
+            G2L["2d"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["2d"].Padding= Dim(0, 8);
+            G2L["2d"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["2d"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["2d"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["2e"] = Instancen("TextLabel", G2L["2b"]);
+            G2L["2e"].BorderSizePixel= 0;
+            G2L["2e"].TextSize= 18;
+            G2L["2e"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2e"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["2e"].TextColor3= fromRGB(255, 255, 255);
+            G2L["2e"].BackgroundTransparency= 1;
+            G2L["2e"].RichText= true;
+            G2L["2e"].Text= "Cancel";
+            G2L["2e"].AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L["2f"] = Instancen("Frame", G2L["6"]);
+            G2L["2f"].BorderSizePixel= 0;
+            G2L["2f"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2f"].Size= Dim2(1, 0, 0, 42);
+            G2L["2f"].BackgroundTransparency= 1;
+        
+            G2L["30"] = Instancen("UIListLayout", G2L["2f"]);
+            G2L["30"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["30"].Padding= Dim(0, 9);
+            G2L["30"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["30"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["31"] = Instancen("TextButton", G2L["2f"]);
+            G2L["31"].BorderSizePixel= 0;
+            G2L["31"].TextColor3= fromRGB(255, 255, 255);
+            G2L["31"].AutoButtonColor= false;
+            G2L["31"].TextSize= 14;
+            G2L["31"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["31"].Size= Dim2(0.45, 0, 1, 0);
+            G2L["31"].BackgroundTransparency= 1;
+            G2L["31"].LayoutOrder= 2;
+            G2L["31"].Text= "";
+            G2L["31"].Position= Dim2(-0.00377, 0, 0, 0);
+        
+            G2L["32"] = Instancen("ImageLabel", G2L["31"]);
+            G2L["32"].BorderSizePixel= 0;
+            G2L["32"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["32"].SliceScale= 0.03906;
+            G2L["32"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["32"].ScaleType= Enum.ScaleType.Slice;
+            G2L["32"].ImageTransparency= 1;
+            G2L["32"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["32"].Image= "rbxassetid://80999662900595";
+            G2L["32"].Size= Dim2(1, 0, 1, 0);
+            G2L["32"].BackgroundTransparency= 1;
+            G2L["32"].Name= "Squircle";
+        
+            G2L["33"] = Instancen("ImageLabel", G2L["31"]);
+            G2L["33"].BorderSizePixel= 0;
+            G2L["33"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["33"].SliceScale= 0.03906;
+            G2L["33"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["33"].ScaleType= Enum.ScaleType.Slice;
+            G2L["33"].ImageTransparency= 0.95;
+            G2L["33"].Image= "rbxassetid://80999662900595";
+            G2L["33"].Size= Dim2(1, 0, 1, 0);
+            G2L["33"].BackgroundTransparency= 1;
+            G2L["33"].Name= "Special";
+        
+            G2L["34"] = Instancen("ImageLabel", G2L["31"]);
+            G2L["34"].BorderSizePixel= 0;
+            G2L["34"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["34"].SliceScale= 0.01953;
+            G2L["34"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["34"].ScaleType= Enum.ScaleType.Slice;
+            G2L["34"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["34"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["34"].Image= "rbxassetid://84825982946844";
+            G2L["34"].Size= Dim2(1, 3, 1, 3);
+            G2L["34"].BackgroundTransparency= 1;
+            G2L["34"].Name= "Shadow";
+            G2L["34"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["35"] = Instancen("ImageLabel", G2L["31"]);
+            G2L["35"].BorderSizePixel= 0;
+            G2L["35"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["35"].SliceScale= 0.03906;
+            G2L["35"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["35"].ScaleType= Enum.ScaleType.Slice;
+            G2L["35"].ImageTransparency= 0.85;
+            G2L["35"].Image= "rbxassetid://117788349049947";
+            G2L["35"].Size= Dim2(1, 0, 1, 0);
+            G2L["35"].BackgroundTransparency= 1;
+        
+            G2L["36"] = Instancen("ImageLabel", G2L["31"]);
+            G2L["36"].BorderSizePixel= 0;
+            G2L["36"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["36"].SliceScale= 0.03906;
+            G2L["36"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["36"].ScaleType= Enum.ScaleType.Slice;
+            G2L["36"].ImageTransparency= 1;
+            G2L["36"].Image= "rbxassetid://80999662900595";
+            G2L["36"].Size= Dim2(1, 0, 1, 0);
+            G2L["36"].BackgroundTransparency= 1;
+            G2L["36"].Name= "Frame";
+        
+            G2L["37"] = Instancen("UIPadding", G2L["36"]);
+            G2L["37"].PaddingRight= Dim(0, 12);
+            G2L["37"].PaddingLeft= Dim(0, 12);
+        
+            G2L["38"] = Instancen("UIListLayout", G2L["36"]);
+            G2L["38"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["38"].Padding= Dim(0, 8);
+            G2L["38"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["38"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["38"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["39"] = Instancen("TextLabel", G2L["36"]);
+            G2L["39"].BorderSizePixel= 0;
+            G2L["39"].TextSize= 18;
+            G2L["39"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["39"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["39"].TextColor3= fromRGB(255, 255, 255);
+            G2L["39"].BackgroundTransparency= 1;
+            G2L["39"].RichText= true;
+            G2L["39"].Text= "-";
+            G2L["39"].AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L["3a"] = Instancen("TextButton", G2L["2f"]);
+            G2L["3a"].BorderSizePixel= 0;
+            G2L["3a"].TextColor3= fromRGB(255, 255, 255);
+            G2L["3a"].AutoButtonColor= false;
+            G2L["3a"].TextSize= 14;
+            G2L["3a"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3a"].Size= Dim2(0.45, 0, 1, 0);
+            G2L["3a"].BackgroundTransparency= 1;
+            G2L["3a"].LayoutOrder= 2;
+            G2L["3a"].Text= "";
+            G2L["3a"].Position= Dim2(-0.00377, 0, 0, 0);
+        
+            G2L["3b"] = Instancen("ImageLabel", G2L["3a"]);
+            G2L["3b"].BorderSizePixel= 0;
+            G2L["3b"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["3b"].SliceScale= 0.03906;
+            G2L["3b"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3b"].ScaleType= Enum.ScaleType.Slice;
+            G2L["3b"].ImageTransparency= 1;
+            G2L["3b"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["3b"].Image= "rbxassetid://80999662900595";
+            G2L["3b"].Size= Dim2(1, 0, 1, 0);
+            G2L["3b"].BackgroundTransparency= 1;
+            G2L["3b"].Name= "Squircle";
+        
+            G2L["3c"] = Instancen("ImageLabel", G2L["3a"]);
+            G2L["3c"].BorderSizePixel= 0;
+            G2L["3c"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["3c"].SliceScale= 0.03906;
+            G2L["3c"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3c"].ScaleType= Enum.ScaleType.Slice;
+            G2L["3c"].ImageTransparency= 0.95;
+            G2L["3c"].Image= "rbxassetid://80999662900595";
+            G2L["3c"].Size= Dim2(1, 0, 1, 0);
+            G2L["3c"].BackgroundTransparency= 1;
+            G2L["3c"].Name= "Special";
+        
+            G2L["3d"] = Instancen("ImageLabel", G2L["3a"]);
+            G2L["3d"].BorderSizePixel= 0;
+            G2L["3d"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["3d"].SliceScale= 0.01953;
+            G2L["3d"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3d"].ScaleType= Enum.ScaleType.Slice;
+            G2L["3d"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["3d"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["3d"].Image= "rbxassetid://84825982946844";
+            G2L["3d"].Size= Dim2(1, 3, 1, 3);
+            G2L["3d"].BackgroundTransparency= 1;
+            G2L["3d"].Name= "Shadow";
+            G2L["3d"].Position= Dim2(0.5, 0, 0.5, 0);
+        
+            G2L["3e"] = Instancen("ImageLabel", G2L["3a"]);
+            G2L["3e"].BorderSizePixel= 0;
+            G2L["3e"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["3e"].SliceScale= 0.03906;
+            G2L["3e"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3e"].ScaleType= Enum.ScaleType.Slice;
+            G2L["3e"].ImageTransparency= 0.85;
+            G2L["3e"].Image= "rbxassetid://117788349049947";
+            G2L["3e"].Size= Dim2(1, 0, 1, 0);
+            G2L["3e"].BackgroundTransparency= 1;
+        
+            G2L["3f"] = Instancen("ImageLabel", G2L["3a"]);
+            G2L["3f"].BorderSizePixel= 0;
+            G2L["3f"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["3f"].SliceScale= 0.03906;
+            G2L["3f"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["3f"].ScaleType= Enum.ScaleType.Slice;
+            G2L["3f"].ImageTransparency= 1;
+            G2L["3f"].Image= "rbxassetid://80999662900595";
+            G2L["3f"].Size= Dim2(1, 0, 1, 0);
+            G2L["3f"].BackgroundTransparency= 1;
+            G2L["3f"].Name= "Frame";
+        
+            G2L["40"] = Instancen("UIPadding", G2L["3f"]);
+            G2L["40"].PaddingRight= Dim(0, 12);
+            G2L["40"].PaddingLeft= Dim(0, 12);
+        
+            G2L["41"] = Instancen("UIListLayout", G2L["3f"]);
+            G2L["41"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["41"].Padding= Dim(0, 8);
+            G2L["41"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["41"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["41"].FillDirection= Enum.FillDirection.Horizontal;
+        
+            G2L["42"] = Instancen("TextLabel", G2L["3f"]);
+            G2L["42"].BorderSizePixel= 0;
+            G2L["42"].TextSize= 18;
+            G2L["42"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["42"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["42"].TextColor3= fromRGB(255, 255, 255);
+            G2L["42"].BackgroundTransparency= 1;
+            G2L["42"].RichText= true;
+            G2L["42"].Text= "-";
+            G2L["42"].AutomaticSize= Enum.AutomaticSize.XY;
+        
+            G2L["43"] = Instancen("UIScale", G2L["2"]);
+        
+            G2L["44"] = Instancen("ImageLabel", G2L["2"]);
+            G2L["44"].BorderSizePixel= 0;
+            G2L["44"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["44"].SliceScale= 0.08594;
+            G2L["44"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["44"].ScaleType= Enum.ScaleType.Slice;
+            G2L["44"].ImageTransparency= 0.9;
+            G2L["44"].Image= "rbxassetid://117788349049947";
+            G2L["44"].Size= Dim2(1, 0, 1, 0);
+            G2L["44"].BackgroundTransparency= 1;
+        
+            G2L["45"] = Instancen("UIGradient", G2L["44"]);
+            G2L["45"].Rotation= 90;
+            G2L["45"].Transparency= NSnew{NSKnew(0.000, 0),NSKnew(1.000, 1)};
+        
+            G2L["26"].Activated:Connect(function()
+                G2L["1"]:Destroy();
+                G2L["1"] = nil;
+                G2L = nil;
+            end);
+            G2L["11"].Activated:Connect(function()
+                G2L["1"]:Destroy();
+                G2L["1"] = nil;
+                G2L = nil;
+                return setc("https://link-target.net/657698/elNaqIvsbfuh");
+            end);
+        
+            return G2L;
+        end;
+        function modules:new( arg )
+            local G2L = {};
+            local tbl = {};
+            local configu = {
+                Auth = arg and arg.Auth or emptyfunction;
+                GetKey = arg and arg.GetKey or emptyfunction;
+            };
+        
+            local G2L = {};
+        
+            G2L["1"] = Instancen("ScreenGui", C);
+            G2L["1"].IgnoreGuiInset= true;
+            G2L["1"].ScreenInsets= Enum.ScreenInsets.None;
+            G2L["1"].Name= "FlowAuth";
+            G2L["1"].ZIndexBehavior= Enum.ZIndexBehavior.Sibling;
+            G2L["1"].ResetOnSpawn= false;
+            
+            G2L["2"] = Instancen("ImageLabel", G2L["1"]);
+            G2L["2"].ZIndex= 9999;
+            G2L["2"].BorderSizePixel= 0;
+            G2L["2"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2"].SliceScale= 0.08594;
+            G2L["2"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2"].AutomaticSize= Enum.AutomaticSize.XY;
+            G2L["2"].ImageColor3= fromRGB(25, 25, 28);
+            G2L["2"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["2"].Image= "rbxassetid://80999662900595";
+            G2L["2"].BackgroundTransparency= 1;
+            G2L["2"].Position= Dim2(0.5, 0, 0.5, 0);
+            
+            G2L["3"] = Instancen("Frame", G2L["2"]);
+            G2L["3"].ZIndex= 99999;
+            G2L["3"].BorderSizePixel= 0;
+            G2L["3"].BackgroundColor3= fromRGB(25, 25, 28);
+            G2L["3"].AutomaticSize= Enum.AutomaticSize.Y;
+            G2L["3"].Size= Dim2(0, 430, 0, 0);
+            G2L["3"].BackgroundTransparency= 1;
+            
+            G2L["4"] = Instancen("UIPadding", G2L["3"]);
+            
+            G2L["5"] = Instancen("Frame", G2L["3"]);
+            G2L["5"].BorderSizePixel= 0;
+            G2L["5"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["5"].Size= Dim2(1, 0, 1, 0);
+            G2L["5"].BackgroundTransparency= 1;
+            
+            G2L["6"] = Instancen("Frame", G2L["5"]);
+            G2L["6"].BorderSizePixel= 0;
+            G2L["6"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["6"].Size= Dim2(1, 0, 1, 0);
+            G2L["6"].BackgroundTransparency= 1;
+            
+            G2L["7"] = Instancen("UIListLayout", G2L["6"]);
+            G2L["7"].Padding= Dim(0, 18);
+            G2L["7"].SortOrder= Enum.SortOrder.LayoutOrder;
+            
+            G2L["8"] = Instancen("Frame", G2L["6"]);
+            G2L["8"].BorderSizePixel= 0;
+            G2L["8"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["8"].AutomaticSize= Enum.AutomaticSize.Y;
+            G2L["8"].Size= Dim2(1, 0, 0, 0);
+            G2L["8"].BackgroundTransparency= 1;
+        
+            
+            G2L["9"] = Instancen("Frame", G2L["8"]);
+            G2L["9"].BorderSizePixel= 0;
+            G2L["9"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["9"].AutomaticSize= Enum.AutomaticSize.XY;
+            G2L["9"].BackgroundTransparency= 1;
+            
+            G2L.a= Instancen("UIListLayout", G2L["9"]);
+            G2L.a.Padding= Dim(0, 14);
+            G2L.a.VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L.a.SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L.a.FillDirection= Enum.FillDirection.Horizontal;
+            
+            G2L.b= Instancen("Frame", G2L["9"]);
+            G2L.b.BorderSizePixel= 0;
+            G2L.b.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.b.Size= Dim2(0, 24, 0, 24);
+            G2L.b.LayoutOrder= -1;
+            G2L.b.BackgroundTransparency= 1;
+            
+            G2L.c= Instancen("ImageLabel", G2L.b);
+            G2L.c.BorderSizePixel= 0;
+            G2L.c.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.c.ScaleType= Enum.ScaleType.Crop;
+            G2L.c.Image= "rbxassetid://77771201330939";
+            G2L.c.ImageRectSize= Vec2(96, 96);
+            G2L.c.Size= Dim2(1, 0, 1, 0);
+            G2L.c.BackgroundTransparency= 1;
+            G2L.c.ImageRectOffset= Vec2(0, 768);
+            
+            G2L.d= Instancen("UICorner", G2L.c);
+            G2L.d.CornerRadius= Dim(0, 18);
+            
+            G2L.e= Instancen("TextLabel", G2L["9"]);
+            G2L.e.BorderSizePixel= 0;
+            G2L.e.TextSize= 20;
+            G2L.e.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.e.FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L.e.TextColor3= fromRGB(255, 255, 255);
+            G2L.e.BackgroundTransparency= 1;
+            G2L.e.RichText= true;
+            G2L.e.Text= "Authentication";
+            G2L.e.AutomaticSize= Enum.AutomaticSize.XY;
+            
+            G2L.f= Instancen("TextLabel", G2L["6"]);
+            G2L.f.TextWrapped= true;
+            G2L.f.BorderSizePixel= 0;
+            G2L.f.TextSize= 18;
+            G2L.f.TextXAlignment= Enum.TextXAlignment.Left;
+            G2L.f.TextTransparency= 0.2;
+            G2L.f.BackgroundColor3= fromRGB(255, 255, 255);
+            G2L.f.FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+            G2L.f.TextColor3= fromRGB(255, 255, 255);
+            G2L.f.BackgroundTransparency= 1;
+            G2L.f.RichText= true;
+            G2L.f.Size= Dim2(1, 0, 0, 0);
+            G2L.f.Text= 'We are very <font color="rgb(0, 255, 135)">s</font><font color="rgb(19, 251, 159)">o</font><font color="rgb(38, 248, 183)">r</font><font color="rgb(57, 245, 207)">r</font><font color="rgb(76, 242, 231)">y</font>, to have this auth or key system but this means a lot to us, this is where you support our project. Linkvertise has "no" 1H waiting time.';
+            G2L.f.AutomaticSize= Enum.AutomaticSize.Y;
+            
+            G2L["10"] = Instancen("Frame", G2L["6"]);
+            G2L["10"].BorderSizePixel= 0;
+            G2L["10"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["10"].Size= Dim2(1, 0, 0, 42);
+            G2L["10"].BackgroundTransparency= 1;
+
+            G2L["11"] = Instancen("UIListLayout", G2L["10"]);
+            G2L["11"].HorizontalAlignment= Enum.HorizontalAlignment.Right;
+            G2L["11"].Padding= Dim(0, 9);
+            G2L["11"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["11"].FillDirection= Enum.FillDirection.Horizontal;
+
+            G2L["12"] = Instancen("TextButton", G2L["10"]);
+            G2L["12"].BorderSizePixel= 0;
+            G2L["12"].TextColor3= fromRGB(255, 255, 255);
+            G2L["12"].AutoButtonColor= false;
+            G2L["12"].TextSize= 14;
+            G2L["12"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["12"].AutomaticSize= Enum.AutomaticSize.X;
+            G2L["12"].Size= Dim2(0, 0, 1, 0);
+            G2L["12"].BackgroundTransparency= 1;
+            G2L["12"].LayoutOrder= 2;
+            G2L["12"].Text= "";
+
+            G2L["13"] = Instancen("ImageLabel", G2L["12"]);
+            G2L["13"].BorderSizePixel= 0;
+            G2L["13"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["13"].SliceScale= 0.03906;
+            G2L["13"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["13"].ScaleType= Enum.ScaleType.Slice;
+            G2L["13"].ImageTransparency= 1;
+            G2L["13"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["13"].Image= "rbxassetid://80999662900595";
+            G2L["13"].Size= Dim2(1, 0, 1, 0);
+            G2L["13"].BackgroundTransparency= 1;
+            G2L["13"].Name= "Squircle";
+
+            G2L["14"] = Instancen("ImageLabel", G2L["12"]);
+            G2L["14"].BorderSizePixel= 0;
+            G2L["14"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["14"].SliceScale= 0.03906;
+            G2L["14"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["14"].ScaleType= Enum.ScaleType.Slice;
+            G2L["14"].ImageTransparency= 0.95;
+            G2L["14"].Image= "rbxassetid://80999662900595";
+            G2L["14"].Size= Dim2(1, 0, 1, 0);
+            G2L["14"].BackgroundTransparency= 1;
+            G2L["14"].Name= "Special";
+
+            G2L["15"] = Instancen("ImageLabel", G2L["12"]);
+            G2L["15"].BorderSizePixel= 0;
+            G2L["15"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["15"].SliceScale= 0.01953;
+            G2L["15"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["15"].ScaleType= Enum.ScaleType.Slice;
+            G2L["15"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["15"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["15"].Image= "rbxassetid://84825982946844";
+            G2L["15"].Size= Dim2(1, 3, 1, 3);
+            G2L["15"].BackgroundTransparency= 1;
+            G2L["15"].Name= "Shadow";
+            G2L["15"].Position= Dim2(0.5, 0, 0.5, 0);
+
+            G2L["16"] = Instancen("ImageLabel", G2L["12"]);
+            G2L["16"].BorderSizePixel= 0;
+            G2L["16"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["16"].SliceScale= 0.03906;
+            G2L["16"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["16"].ScaleType= Enum.ScaleType.Slice;
+            G2L["16"].ImageTransparency= 0.85;
+            G2L["16"].Image= "rbxassetid://117788349049947";
+            G2L["16"].Size= Dim2(1, 0, 1, 0);
+            G2L["16"].BackgroundTransparency= 1;
+
+            G2L["17"] = Instancen("ImageLabel", G2L["12"]);
+            G2L["17"].BorderSizePixel= 0;
+            G2L["17"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["17"].SliceScale= 0.03906;
+            G2L["17"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["17"].ScaleType= Enum.ScaleType.Slice;
+            G2L["17"].ImageTransparency= 1;
+            G2L["17"].Image= "rbxassetid://80999662900595";
+            G2L["17"].Size= Dim2(1, 0, 1, 0);
+            G2L["17"].BackgroundTransparency= 1;
+            G2L["17"].Name= "Frame";
+
+            G2L["18"] = Instancen("UIPadding", G2L["17"]);
+            G2L["18"].PaddingRight= Dim(0, 12);
+            G2L["18"].PaddingLeft= Dim(0, 12);
+
+            G2L["19"] = Instancen("UIListLayout", G2L["17"]);
+            G2L["19"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["19"].Padding= Dim(0, 8);
+            G2L["19"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["19"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["19"].FillDirection= Enum.FillDirection.Horizontal;
+
+            G2L["1a"] = Instancen("TextLabel", G2L["17"]);
+            G2L["1a"].BorderSizePixel= 0;
+            G2L["1a"].TextSize= 18;
+            G2L["1a"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1a"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["1a"].TextColor3= fromRGB(255, 255, 255);
+            G2L["1a"].BackgroundTransparency= 1;
+            G2L["1a"].RichText= true;
+            G2L["1a"].Text= "Cancel";
+            G2L["1a"].AutomaticSize= Enum.AutomaticSize.XY;
+
+            G2L["1b"] = Instancen("TextButton", G2L["10"]);
+            G2L["1b"].BorderSizePixel= 0;
+            G2L["1b"].TextColor3= fromRGB(255, 255, 255);
+            G2L["1b"].AutoButtonColor= false;
+            G2L["1b"].TextSize= 14;
+            G2L["1b"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1b"].AutomaticSize= Enum.AutomaticSize.X;
+            G2L["1b"].Size= Dim2(0, 0, 1, 0);
+            G2L["1b"].BackgroundTransparency= 1;
+            G2L["1b"].LayoutOrder= 3;
+            G2L["1b"].Text= "";
+
+            G2L["1c"] = Instancen("ImageLabel", G2L["1b"]);
+            G2L["1c"].BorderSizePixel= 0;
+            G2L["1c"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1c"].SliceScale= 0.03906;
+            G2L["1c"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1c"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1c"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["1c"].Image= "rbxassetid://80999662900595";
+            G2L["1c"].Size= Dim2(1, 0, 1, 0);
+            G2L["1c"].BackgroundTransparency= 1;
+            G2L["1c"].Name= "Squircle";
+
+            G2L["1d"] = Instancen("ImageLabel", G2L["1b"]);
+            G2L["1d"].BorderSizePixel= 0;
+            G2L["1d"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1d"].SliceScale= 0.03906;
+            G2L["1d"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1d"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1d"].ImageTransparency= 1;
+            G2L["1d"].Image= "rbxassetid://80999662900595";
+            G2L["1d"].Size= Dim2(1, 0, 1, 0);
+            G2L["1d"].BackgroundTransparency= 1;
+            G2L["1d"].Name= "Special";
+
+            G2L["1e"] = Instancen("ImageLabel", G2L["1b"]);
+            G2L["1e"].BorderSizePixel= 0;
+            G2L["1e"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["1e"].SliceScale= 0.01953;
+            G2L["1e"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1e"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1e"].ImageTransparency= 1;
+            G2L["1e"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["1e"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["1e"].Image= "rbxassetid://84825982946844";
+            G2L["1e"].Size= Dim2(1, 3, 1, 3);
+            G2L["1e"].BackgroundTransparency= 1;
+            G2L["1e"].Name= "Shadow";
+            G2L["1e"].Position= Dim2(0.5, 0, 0.5, 0);
+
+            G2L["1f"] = Instancen("ImageLabel", G2L["1b"]);
+            G2L["1f"].BorderSizePixel= 0;
+            G2L["1f"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["1f"].SliceScale= 0.03906;
+            G2L["1f"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["1f"].ScaleType= Enum.ScaleType.Slice;
+            G2L["1f"].ImageTransparency= 0.95;
+            G2L["1f"].Image= "rbxassetid://117788349049947";
+            G2L["1f"].Size= Dim2(1, 0, 1, 0);
+            G2L["1f"].BackgroundTransparency= 1;
+
+            G2L["20"] = Instancen("ImageLabel", G2L["1b"]);
+            G2L["20"].BorderSizePixel= 0;
+            G2L["20"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["20"].SliceScale= 0.03906;
+            G2L["20"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["20"].ScaleType= Enum.ScaleType.Slice;
+            G2L["20"].ImageTransparency= 1;
+            G2L["20"].Image= "rbxassetid://80999662900595";
+            G2L["20"].Size= Dim2(1, 0, 1, 0);
+            G2L["20"].BackgroundTransparency= 1;
+            G2L["20"].Name= "Frame";
+
+            G2L["21"] = Instancen("UIPadding", G2L["20"]);
+            G2L["21"].PaddingRight= Dim(0, 12);
+            G2L["21"].PaddingLeft= Dim(0, 12);
+
+            G2L["22"] = Instancen("UIListLayout", G2L["20"]);
+            G2L["22"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["22"].Padding= Dim(0, 8);
+            G2L["22"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["22"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["22"].FillDirection= Enum.FillDirection.Horizontal;
+
+            G2L["23"] = Instancen("ImageLabel", G2L["20"]);
+            G2L["23"].BorderSizePixel= 0;
+            G2L["23"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["23"].ImageColor3= fromRGB(162, 162, 171);
+            G2L["23"].Image= "rbxassetid://131526378523863";
+            G2L["23"].ImageRectSize= Vec2(96, 96);
+            G2L["23"].Size= Dim2(0, 21, 0, 21);
+            G2L["23"].BackgroundTransparency= 1;
+            G2L["23"].ImageRectOffset= Vec2(480, 768);
+
+            G2L["24"] = Instancen("TextLabel", G2L["20"]);
+            G2L["24"].BorderSizePixel= 0;
+            G2L["24"].TextSize= 18;
+            G2L["24"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["24"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["24"].TextColor3= fromRGB(255, 255, 255);
+            G2L["24"].BackgroundTransparency= 1;
+            G2L["24"].RichText= true;
+            G2L["24"].Text= "Continue";
+            G2L["24"].AutomaticSize= Enum.AutomaticSize.XY;
+
+            G2L["25"] = Instancen("TextBox", G2L["10"]);
+            G2L["25"].BorderSizePixel= 0;
+            G2L["25"].TextSize= 14;
+            G2L["25"].TextColor3= fromRGB(255, 255, 255);
+            G2L["25"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["25"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["25"].ClipsDescendants= true;
+            G2L["25"].PlaceholderText= "Enter Key...";
+            G2L["25"].Size= Dim2(0.17, 0, 1, 0);
+            G2L["25"].BorderColor3= fromRGB(0, 0, 0);
+            G2L["25"].Text= "";
+            G2L["25"].BackgroundTransparency= 1;
+
+            G2L["26"] = Instancen("ImageLabel", G2L["25"]);
+            G2L["26"].BorderSizePixel= 0;
+            G2L["26"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["26"].SliceScale= 0.03906;
+            G2L["26"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["26"].ScaleType= Enum.ScaleType.Slice;
+            G2L["26"].ImageTransparency= 1;
+            G2L["26"].Image= "rbxassetid://80999662900595";
+            G2L["26"].Size= Dim2(1, 0, 1, 0);
+            G2L["26"].BackgroundTransparency= 1;
+            G2L["26"].Name= "Frame";
+
+            G2L["27"] = Instancen("ImageLabel", G2L["25"]);
+            G2L["27"].BorderSizePixel= 0;
+            G2L["27"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["27"].SliceScale= 0.03906;
+            G2L["27"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["27"].ScaleType= Enum.ScaleType.Slice;
+            G2L["27"].ImageTransparency= 0.85;
+            G2L["27"].Image= "rbxassetid://117788349049947";
+            G2L["27"].Size= Dim2(1, 0, 1, 0);
+            G2L["27"].BackgroundTransparency= 1;
+
+            G2L["28"] = Instancen("ImageLabel", G2L["25"]);
+            G2L["28"].BorderSizePixel= 0;
+            G2L["28"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["28"].SliceScale= 0.01953;
+            G2L["28"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["28"].ScaleType= Enum.ScaleType.Slice;
+            G2L["28"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["28"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["28"].Image= "rbxassetid://84825982946844";
+            G2L["28"].Size= Dim2(1, 3, 1, 3);
+            G2L["28"].BackgroundTransparency= 1;
+            G2L["28"].Name= "Shadow";
+            G2L["28"].Position= Dim2(0.5, 0, 0.5, 0);
+
+            G2L["29"] = Instancen("ImageLabel", G2L["25"]);
+            G2L["29"].BorderSizePixel= 0;
+            G2L["29"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["29"].SliceScale= 0.03906;
+            G2L["29"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["29"].ScaleType= Enum.ScaleType.Slice;
+            G2L["29"].ImageTransparency= 0.95;
+            G2L["29"].Image= "rbxassetid://80999662900595";
+            G2L["29"].Size= Dim2(1, 0, 1, 0);
+            G2L["29"].BackgroundTransparency= 1;
+            G2L["29"].Name= "Special";
+
+            G2L["2a"] = Instancen("ImageLabel", G2L["25"]);
+            G2L["2a"].BorderSizePixel= 0;
+            G2L["2a"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2a"].SliceScale= 0.03906;
+            G2L["2a"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2a"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2a"].ImageTransparency= 1;
+            G2L["2a"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["2a"].Image= "rbxassetid://80999662900595";
+            G2L["2a"].Size= Dim2(1, 0, 1, 0);
+            G2L["2a"].BackgroundTransparency= 1;
+            G2L["2a"].Name= "Squircle";
+
+            G2L["2b"] = Instancen("TextButton", G2L["10"]);
+            G2L["2b"].BorderSizePixel= 0;
+            G2L["2b"].TextColor3= fromRGB(255, 255, 255);
+            G2L["2b"].AutoButtonColor= false;
+            G2L["2b"].TextSize= 14;
+            G2L["2b"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2b"].AutomaticSize= Enum.AutomaticSize.X;
+            G2L["2b"].Size= Dim2(0, 0, 1, 0);
+            G2L["2b"].BackgroundTransparency= 1;
+            G2L["2b"].LayoutOrder= 1;
+            G2L["2b"].Text= "";
+
+            G2L["2c"] = Instancen("ImageLabel", G2L["2b"]);
+            G2L["2c"].BorderSizePixel= 0;
+            G2L["2c"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2c"].SliceScale= 0.03906;
+            G2L["2c"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2c"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2c"].ImageTransparency= 1;
+            G2L["2c"].ImageColor3= fromRGB(83, 83, 92);
+            G2L["2c"].Image= "rbxassetid://80999662900595";
+            G2L["2c"].Size= Dim2(1, 0, 1, 0);
+            G2L["2c"].BackgroundTransparency= 1;
+            G2L["2c"].Name= "Squircle";
+
+            G2L["2d"] = Instancen("ImageLabel", G2L["2b"]);
+            G2L["2d"].BorderSizePixel= 0;
+            G2L["2d"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2d"].SliceScale= 0.03906;
+            G2L["2d"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2d"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2d"].ImageTransparency= 0.95;
+            G2L["2d"].Image= "rbxassetid://80999662900595";
+            G2L["2d"].Size= Dim2(1, 0, 1, 0);
+            G2L["2d"].BackgroundTransparency= 1;
+            G2L["2d"].Name= "Special";
+
+            G2L["2e"] = Instancen("ImageLabel", G2L["2b"]);
+            G2L["2e"].BorderSizePixel= 0;
+            G2L["2e"].SliceCenter= Rectn(512, 512, 512, 512);
+            G2L["2e"].SliceScale= 0.01953;
+            G2L["2e"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2e"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2e"].ImageColor3= fromRGB(0, 0, 0);
+            G2L["2e"].AnchorPoint= Vec2(0.5, 0.5);
+            G2L["2e"].Image= "rbxassetid://84825982946844";
+            G2L["2e"].Size= Dim2(1, 3, 1, 3);
+            G2L["2e"].BackgroundTransparency= 1;
+            G2L["2e"].Name= "Shadow";
+            G2L["2e"].Position= Dim2(0.5, 0, 0.5, 0);
+
+            G2L["2f"] = Instancen("ImageLabel", G2L["2b"]);
+            G2L["2f"].BorderSizePixel= 0;
+            G2L["2f"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["2f"].SliceScale= 0.03906;
+            G2L["2f"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["2f"].ScaleType= Enum.ScaleType.Slice;
+            G2L["2f"].ImageTransparency= 0.85;
+            G2L["2f"].Image= "rbxassetid://117788349049947";
+            G2L["2f"].Size= Dim2(1, 0, 1, 0);
+            G2L["2f"].BackgroundTransparency= 1;
+
+            G2L["30"] = Instancen("ImageLabel", G2L["2b"]);
+            G2L["30"].BorderSizePixel= 0;
+            G2L["30"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["30"].SliceScale= 0.03906;
+            G2L["30"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["30"].ScaleType= Enum.ScaleType.Slice;
+            G2L["30"].ImageTransparency= 1;
+            G2L["30"].Image= "rbxassetid://80999662900595";
+            G2L["30"].Size= Dim2(1, 0, 1, 0);
+            G2L["30"].BackgroundTransparency= 1;
+            G2L["30"].Name= "Frame";
+
+            G2L["31"] = Instancen("UIPadding", G2L["30"]);
+            G2L["31"].PaddingRight= Dim(0, 12);
+            G2L["31"].PaddingLeft= Dim(0, 12);
+
+            G2L["32"] = Instancen("UIListLayout", G2L["30"]);
+            G2L["32"].HorizontalAlignment= Enum.HorizontalAlignment.Center;
+            G2L["32"].Padding= Dim(0, 8);
+            G2L["32"].VerticalAlignment= Enum.VerticalAlignment.Center;
+            G2L["32"].SortOrder= Enum.SortOrder.LayoutOrder;
+            G2L["32"].FillDirection= Enum.FillDirection.Horizontal;
+
+            G2L["33"] = Instancen("TextLabel", G2L["30"]);
+            G2L["33"].BorderSizePixel= 0;
+            G2L["33"].TextSize= 18;
+            G2L["33"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["33"].FontFace= Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            G2L["33"].TextColor3= fromRGB(255, 255, 255);
+            G2L["33"].BackgroundTransparency= 1;
+            G2L["33"].RichText= true;
+            G2L["33"].Text= "Copy Link";
+            G2L["33"].AutomaticSize= Enum.AutomaticSize.XY;
+
+            G2L["34"] = Instancen("UIPadding", G2L["6"]);
+            G2L["34"].PaddingTop= Dim(0, 16);
+            G2L["34"].PaddingRight= Dim(0, 16);
+            G2L["34"].PaddingLeft= Dim(0, 16);
+            G2L["34"].PaddingBottom= Dim(0, 16);
+
+            G2L["35"] = Instancen("UIScale", G2L["2"]);
+
+            G2L["36"] = Instancen("ImageLabel", G2L["2"]);
+            G2L["36"].BorderSizePixel= 0;
+            G2L["36"].SliceCenter= Rectn(256, 256, 256, 256);
+            G2L["36"].SliceScale= 0.08594;
+            G2L["36"].BackgroundColor3= fromRGB(255, 255, 255);
+            G2L["36"].ScaleType= Enum.ScaleType.Slice;
+            G2L["36"].ImageTransparency= 0.9;
+            G2L["36"].Image= "rbxassetid://117788349049947";
+            G2L["36"].Size= Dim2(1, 0, 1, 0);
+            G2L["36"].BackgroundTransparency= 1;
+            
+            G2L["37"] = Instancen("UIGradient", G2L["36"]);
+            G2L["37"].Rotation= 90;
+            G2L["37"].Transparency= NSnew{NSKnew(0.000, 0),NSKnew(1.000, 1)};
+        
+            G2L["1b"].MouseButton1Click:Connect(function()
+                return configu.Auth(G2L["25"].Text);
+            end);
+            G2L["2b"].MouseButton1Click:Connect(configu.GetKey);
+            G2L["12"].MouseButton1Click:Connect(function(...)
+                Destroy(G2L["1"]); G2L = nil;
+            end);
+    
+            function modules:fadeAndTween(G2L, e)
+                local tweenInfo = TwInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                for key, instance in pir(G2L) do
+                    tspawn(function()
+                        if IsA(instance, "TextLabel") and instance.Text ~= "Authentication" then
+                            local tween = TwCreate(TweenService, instance, tweenInfo, {TextTransparency = 1});
+                            instance.AutomaticSize = Enum.AutomaticSize.None; tween:Play();
+                            tween.Completed:Once(function() instance.Visible = false; end);
+                        elseif IsA(instance, "Frame") then
+                            local size = instance.Size;
+                            local tween = TwCreate(TweenService, instance, tweenInfo, {Size = UDim2.new(size.X.Scale, size.X.Offset, 0, 0)})
+                            instance.AutomaticSize = Enum.AutomaticSize.None; tween:Play()
+                            tween.Completed:Once(function() Destroy(instance); end);
+                        end;
+                    end);
+                end;
+                local function tweenText()
+                    local textLabel = e;
+                    local tweenInfoFadeOut = TwInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
+                    local tweenInfoFadeIn = TwInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In);
+    
+                    for _, msg in ipir({
+                        {Text = "Vulnerability X", Duration = 0.5},
+                        {Text = "Script verified by VULX AI", Duration = 0.5},
+                        {Text = "Script verfied by TTJY's Bot", Duration = 0.5},
+                        {Text = "Script made by TTJY", Duration = 0.5},
+                        {Text = "Script made by Sevensenz7", Duration = 0.5},
+                        {Text = "Script made by x.nep", Duration = 0.5},
+                        {Text = "Thank you!", Duration = 0.5}
+                    }) do
+                        local tweenOut = TwCreate(TweenService, textLabel, tweenInfoFadeOut, {TextTransparency = 1});
+                        tweenOut:Play(); tweenOut.Completed:Wait(); textLabel.Text = msg.Text;
+                        local tweenIn = TwCreate(TweenService, textLabel, tweenInfoFadeIn, {TextTransparency = 0});
+                        tweenIn:Play(); twait(msg.Duration + 0.4);
+                    end;
+                end;
+                tweenText();
+            end;
+            return G2L, tbl;
+        end;    
+        return modules;
+    end;
+end;
+AssetStorage.P30Dol = function(): nil
+    if Prv_url then return; end; GG.Prv_url = "https://v0-admin-dashboard-delta-topaz.vercel.app";
+end;
+AssetStorage.AI = function(): nil
+    if AI_Url then return; end;
+    GG.AI_Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
+    GG.BaseInfo = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/A.txt");
+    GG.AI_Body = {
+        contents = {{
+            parts = {{ text = "Hi"; };};
+        };};
+    };
+    GG.AI_Request = function(Hasahc : base1Vulx) : string
+        if not Hasahc or Hasahc == "" then return ""; end;
+        local ok, resp = pcal(function()
+            return request({
+                Url = AI_Url .. Hasahc; Method = "POST";
+                Headers = { ["Content-Type"] = "application/json"; };
+                Body = EnCodeJ(HttpService, AI_Body);
+            });
+        end);
+        if ok and resp and resp.Success and resp.Body then
+            local dec = DeCodeJ(HttpService, resp.Body)
+            if dec and dec.candidates and dec.candidates[1] and dec.candidates[1].content and dec.candidates[1].content.parts and dec.candidates[1].content.parts[1] then
+                return dec.candidates[1].content.parts[1].text or "Empty response.";
+            end; return "Malformed response.";
+        end; return "Failed to connect to server.";
+    end;
+end;
+AssetStorage.Error405 = function(): nil
+    if Error405 then return; end;
+    local lastSent = 0;
+    GG.Error405 = {};
+
+    function Error405:safeToString(v) local ok, s = pcal(function() return tos(v); end); return ok and s or ""; end;
+    function Error405:truncate(s, n) return (#s <= n) and s or (strsub(s, 1, n - 3) .. "..."); end;
+    function Error405:flattenTable(tbl)
+        local out = {};
+        local function recurse(t, prefix)
+            prefix = prefix and (prefix ~= "" and prefix .. "." or "") or "";
+            for k, v in pir(t) do
+                local key = Error405:safeToString(k);
+                if type(v) == "table" then
+                    recurse(v, prefix .. key);
+                else
+                    out[#out + 1] = prefix .. key .. " : " .. Error405:safeToString(v);
+                end;
+            end;
+        end;
+        recurse(tbl or {}, "");
+        return out;
+    end;
+
+    function Error405:configsToEmbeds(configTbl)
+        local lines = Error405:flattenTable(configTbl or Configs or {});
+        local embeds, currentLines, currentLen = {}, {}, 0;
+        for i = 1, #lines do
+            local line = lines[i] .. "\n"
+            if currentLen + #line > 4000 and #currentLines > 0 then
+                embeds[#embeds + 1] = {
+                    title = "Configs",
+                    description = Error405:truncate(tconcat(currentLines), 4096),
+                    color = 4325120
+                };
+                currentLines, currentLen = {}, 0;
+            end;
+            currentLines[#currentLines + 1] = line;
+            currentLen = currentLen + #line;
+        end;
+        if #currentLines > 0 then
+            embeds[#embeds + 1] = {
+                title = "Configs",
+                description = Error405:truncate(tconcat(currentLines), 4096),
+                color = 4325120;
+            };
+        end;
+        if #embeds > 9 then
+            local keep = 8;
+            local merged = {};
+            for i = keep + 1, #embeds do
+                merged[#merged + 1] = embeds[i].description;
+            end;
+            local newEmbeds = {};
+            for i = 1, keep do newEmbeds[#newEmbeds + 1] = embeds[i] end
+            newEmbeds[#newEmbeds + 1] = {
+                title = "Configs (continued)",
+                description = Error405:truncate(tconcat(merged, "\n"), 4096),
+                color = 4325120;
+            };
+            embeds = newEmbeds;
+        end;
+        return embeds;
+    end;
+    function Error405:sanitizeEmbed(e)
+        return { title = Error405:truncate(Error405:safeToString(e.title), 256), description = Error405:truncate(Error405:safeToString(e.description), 4096), color = mfloor(ton(e.color) or 0) };
+    end;
+    function Error405:sendRequest(bodyStr)
+        if not ErrorURL then return; end;
+        return pcal(function()
+            return request({
+                Url = ErrorURL, Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body = bodyStr
+            });
+        end);
+    end;
+    function Error405:sendWebhook(errorMsg, stackTrace, scriptObj)
+        local now = otime();
+        if now - lastSent < 1 then return false; end;
+        lastSent = now; local scriptName = "UnknownScript"
+        if scriptObj then
+            pcal(function() scriptName = scriptObj.GetFullName and GetFullName(scriptObj) or tos(scriptObj); end);
+        end;
+        local content = Error405:truncate(("**Error Detected**\n```time : %s\nuser : %s\n```"):format(Functions:ReadDate(), "Anonymous"), 2000);
+        local embeds = Error405:configsToEmbeds(Configs);
+        embeds[#embeds + 1] = Error405:sanitizeEmbed({
+            title = "Error",
+            description = ("Script: %s\n\nMessage:\n%s\n\nStacktrace:\n%s"):format(Error405:safeToString(scriptName), Error405:safeToString(errorMsg), Error405:safeToString(stackTrace or "")),
+            color = 16711680;
+        });
+        while #embeds > 10 do table.remove(embeds, 1); end;
+        local payload = { content = content, embeds = embeds };
+        return Error405:sendRequest(EnCodeJ(HttpService, payload));
+    end;
+end;
+AssetStorage.SensitiveService = function(): nil
+    local RawC = {};
+    GG.SLow_ForceSelfThisFunction = function( key )
+        local Attempt_To_Index_Function = clonefunction(GG[key])
+        GG[key] = function(...)
+            Attempt_To_Index_Function(...) return Attempt_To_Index_Function;
+        end;
+        tablein(RawC, GG[key]);
+    end;
+    GG.SLow_SelfThisFunction = function( key )
+        local Attempt_To_Index_Function = clonefunction(GG[key])
+        GG[key] = function(...)
+            local Return = Attempt_To_Index_Function(...);
+            if Return then return Return; end;
+            return Attempt_To_Index_Function;
+        end;
+        tablein(RawC, GG[key]);
+    end;
+    GG.Lower_ForceSelfThisFunction = function( key )
+        local Attempt_To_Hooked = nil;
+        if GG[key] then
+            Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
+                Attempt_To_Hooked(...); return GG[key];
+            end));
+        end;
+        tablein(RawC, GG[key]);
+    end;
+    GG.Lower_SelfThisFunction = function( key )
+        local Attempt_To_Hooked = nil;
+        if GG[key] then
+            Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
+                local Return = Attempt_To_Hooked(...);
+                if Return then return Return; end; return GG[key];
+            end));
+        end;
+        tablein(RawC, GG[key]);
+    end;
+    GG.Restore_SensitiveService = function( offset )
+        return tEach(RawC, function(_, v)
+            if v == offset then
+                pcal(function() ResetC(offset); table.remove(RawC, _); end);
+            end;
+        end);
+    end;
+end;
+AssetStorage.QueueService = function(): nil
+    ScriptCache.OnTeleportCC = nil;
+    ScriptCache.f_I_table = {};
+    ScriptCache.f_n_table = {};
+    GG.Q_UploadFkey = function( key : any , f )
+        ScriptCache.f_I_table[key] = f;
+    end;
+    GG.Q_UploadFNokey = function( key : any , f )
+        tablein(ScriptCache.f_n_table, f);
+    end;
+    GG.Remove_Q_FKey = function( key : any , f )
+        ScriptCache.f_I_table[key] = nil;
+    end;
+    GG.Remove_Q_FNoKey = function( key : any , f )
+        for _,v in pir(ScriptCache.f_n_table) do
+            table.remove(ScriptCache.f_n_table, _);
+        end;
+    end;
+    GG.Q_Connect = function( States , is_Secure , queue_str )
+        if ScriptCache.OnTeleportCC then
+            ScriptCache.OnTeleportCC:Disconnect();
+            ScriptCache.OnTeleportCC = nil;
+        end;
+        ScriptCache.OnTeleportCC = selff.OnTeleport:Connect(function(State)
+            if GG.ONTCC and tablef(States, State) then -- Enum.TeleportState.Started, RequestedFromServer
+                table.foreach(ScriptCache.f_I_table, function(i, v)
+                    return is_Secure and pcal(v) or v();
+                end);
+                table.foreach(ScriptCache.f_n_table, function(i, v)
+                    return is_Secure and pcal(v) or v();
+                end);
+                if queue_str then
+                    return queueOT(queue_str);
+                end;
+            end;
+        end);
+    end;
+    GG.Q_Disonnect = function()
+        if ScriptCache.OnTeleportCC then
+            ScriptCache.OnTeleportCC:Disconnect();
+            ScriptCache.OnTeleportCC = nil;
+        end;
+    end;
+    GG.Q_Connect_Get = function( States , is_Secure, Method , func )
+        if ScriptCache.OnTeleportCC2 then
+            ScriptCache.OnTeleportCC2:Disconnect();
+            ScriptCache.OnTeleportCC2 = nil;
+        end;
+        ScriptCache.OnTeleportCC2 = selff.OnTeleport:Connect(function(State)
+            if GG.ONTCC2 and tablef(States, State) then
+                tEach(ScriptCache.f_I_table, function(i, v)
+                    return is_Secure and pcal(v) or v();
+                end);
+                tEach(ScriptCache.f_n_table, function(i, v)
+                    return is_Secure and pcal(v) or v();
+                end);
+                local queue_str = func and func();
+                if queue_str then
+                    return queueOT(queue_str);
+                end;
+            end;
+        end);
+    end;
+    GG.Q_Disonnect2 = function()
+        if ScriptCache.OnTeleportCC2 then
+            ScriptCache.OnTeleportCC2:Disconnect(); ScriptCache.OnTeleportCC2 = nil;
+        end;
+    end;
+end;
+AssetStorage.Files = function()
+    GG.FileSys = GG.FileSys or {};
+    GG.FileSysOrigin = "FlowXS/";
+
+    function FileSys:Continue( a : fileName , b : string): nil
+        if appendfile and isfile then
+            return (isfile(a) and appendfile(a,b));
+        end;
+        return warn("[Flow] : Error : appendfile or isfile is not a valid function.");
+    end;
+    function FileSys:ListFrom( a : folderName , is_fullname : boolean , filesynx : string )
+        if listfiles and isfolder then
+            local ok, files = pcal(listfiles, FileSysOrigin .. a);
+            if not ok then return {}; end;
+            local list = {};
+            for _, f in ipir(files) do
+                local corrected_name = f;
+                if is_fullname then
+                    if not strfind(corrected_name, "FlowXS") then
+                        corrected_name = FileSysOrigin .. a .. "/" .. corrected_name;
+                    end;
+                else
+                    corrected_name = f:match("([^/\\]+)%.macro$");
+                end;
+                if filesynx then
+                    corrected_name = corrected_name .. filesynx;
+                end;
+                tablein(list, corrected_name);
+            end;
+            return list;
+        end;
+        warn("[Flow] : Error : listfiles or isfolder is not a valid function.");
+        return {}; 
+    end;
+    function FileSys:WriteFrom( a : folderName , b : fileName , c : string ): nil
+        if isfolder and writefile then
+            local datas = c;
+            if type(datas) == 'table' then
+                datas = EnCodeJ(HttpService, datas);
+            end;
+            if not isfolder(FileSysOrigin .. a) then
+                makefolder(FileSysOrigin .. a);
+            end;
+            return writefile(FileSysOrigin .. a .. "/" .. b, datas);
+        end;
+        return warn("[Flow] : Error : isfolder or writefile is not a valid function.");
+    end;
+    function FileSys:ConvertTo( data : any , format : string ): any
+        if format == "Lua" then
+            if type(data) == 'string' then
+                return "return function() " .. data .. "end";
+            end;
+            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+        elseif format == "LuaJA" then
+            if type(data) == 'table' then
+                local str = "{"
+                local first = true
+            
+                for k, v in pir(data) do
+                    if not first then
+                        str = str .. ",\n";
+                    end;
+                    first = false;
+            
+                    local keyStr = "[\"" .. tos(k) .. "\"]";
+                    local valStr = "\"" .. tos(v) .. "\"";
+                    str = str .. keyStr .. " = " .. valStr;
+                end;
+            
+                str = str .. "}";
+                return "return " .. str;
+            end;
+            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+        elseif format == "JSON" then
+            if type(data) == 'table' then
+                -- Format to string;
+            end;
+            return warn("[Flow] : ConvertTo : Error : Argument #1 must be table.");
+        elseif format == "Encrypt" then
+            return warn("[Flow] : ConvertTo : Log : You are currently using demo filesystem.");
+        end;
+    end;
+    function FileSys:RepairTbl(tbl: table): table
+        if type(tbl) ~= "table" then
+            return "nilByTTJY";
+        end;
+    
+        local function safeRead(innerTbl, visited)
+            if visited[innerTbl] then
+                return "[Circular Reference]";
+            end;
+            visited[innerTbl] = true;
+    
+            local newTbl = {};
+            for k, v in pairs(innerTbl) do
+                local typeofv = typeof(v);
+                if typeofv == 'Instance' then
+                    local desc = "Object is an Instance";
+                    if v.Parent then
+                        desc = desc .. " | Path is [ " .. v:GetFullName() .. " ]";
+                    else
+                        desc = desc .. " | Path is [ nil." .. tostring(v) .. " ]";
+                    end;
+                    newTbl[k] = desc;
+                elseif typeofv == 'table' then
+                    newTbl[k] = safeRead(v, visited);
+                elseif typeofv == 'CFrame' then
+                    newTbl[k] = "Object was CFrame. [ CF(" .. tconcat({v:GetComponents()}, ", ") .. ") ]";
+                elseif typeofv == 'Vector2' then
+                    newTbl[k] = "Object was Vector2. [ Vec2(" .. tconcat({v.X, v.Y}, ", ") .. ") ]";
+                elseif typeofv == 'Vector3' then
+                    newTbl[k] = "Object was Vector3. [ Vec3(" .. tconcat({v.X, v.Y, v.Z}, ", ") .. ") ]";
+                else
+                    newTbl[k] = v;
+                end;
+            end;
+            return newTbl;
+        end;
+    
+        return safeRead(tbl, {});
+    end;
+end;
+
+GG.CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0};
+if GG.ScriptCache.userIdentify.device == "Mobile" then
+    pcal(function() GG.controlModule = require(PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule")); end);
+end;
+
+GG.error_handler = function(...)
+    return warn("[Flow] : Error : " .. ...);
+end;
+GG.dist = function( position : Vector3 )
+    return selff:DistanceFromCharacter(position);
+end;
+
+GG.tableToString = function(tbl, name)
+    name = name or "tbl";
+    local function serialize(t, indent)
+        indent = indent or 0;
+        local str = "{ ";
+        for k, v in ipir(t) do
+            local key = nil;
+            if type(k) == "string" then
+                key = strformat("[%q]", k);
+            else
+                key = "[" .. tos(k) .. "]";
+            end;
+
+            local value;
+            if type(v) == "table" then
+                value = serialize(v, indent + 2);
+            elseif type(v) == "string" then
+                value = strformat("%q", v);
+            else
+                value = tos(v);
+            end;
+            str = str .. key .. " = " .. value .. ", ";
+        end;
+        str = str .. "}";
+        return str;
+    end;
+
+    return name .. " = " .. serialize(tbl) .. ";";
+end;
+GG.configsToString = function()
+    local function serialize(tbl, indent)
+        indent = indent or ""
+        local result = "{\n"
+        for k,v in pir(tbl) do
+            local key = (typeof(k) == "string") and strformat("[%q]", k) or "["..tos(k).."]";
+            if typeof(v) == "table" then
+                result ..= indent.."    "..key.." = "..serialize(v, indent.."    ")..";\n";
+            elseif typeof(v) == "string" then
+                result ..= indent.."    "..key.." = "..strformat("%q", v)..";\n";
+            else
+                result ..= indent.."    "..key.." = "..tos(v)..";\n";
+            end;
+        end;
+        result ..= indent.."}";
+        return result;
+    end;
+    local exported = "getgenv().Configs = " .. serialize(Configs);
+    return exported;
+end;
+
+ScriptCache.createParagraph_Wel = ScriptCache.createParagraph_Wel or function(tab, title, desc, image, imageSize, color)
+    return tab:Paragraph({
+        Title = title,
+        Desc = desc,
+        Image = image,
+        ImageSize = imageSize,
+        Color = color or nil,
+    });
+end;
+ScriptCache.createSection_Wel = ScriptCache.createSection_Wel or function(tab, title)
+    return tab:Section({ Title = title, TextXAlignment = "Center" });
+end;
+
+ScriptCache.fetchDiscordInfo_Wel = ScriptCache.fetchDiscordInfo_Wel or function(url, wind)
+    local res = nil;
+    pcal(function()
+        res = DeCodeJ(HttpService, request({
+            Url = url,
+            Method = "GET",
+            Headers = { ["Accept"] = "application/json" }
+        }).Body);
+    end);
+    return res or {};
+end;
+
+GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI): any
+    ScriptCache.InviteCode = ScriptCache.InviteCode or "c8cUR6Unay";
+    local DiscordAPI = "https://discord.com/api/v10/invites/" .. ScriptCache.InviteCode .. "?with_counts=true&with_expiration=true";
+    
+    local Response = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
+
+    if Response and Response.guild then
+        local desc = 
+            ' <font color="#52525b">•</font> Member Count : ' .. tos(Response.approximate_member_count) ..
+            '\n <font color="#16a34a">•</font> Online Count : ' .. tos(Response.approximate_presence_count);
+
+        local img = "https://cdn.discordapp.com/icons/" .. Response.guild.id .. "/" .. Response.guild.icon .. ".png?size=1024";
+        local DiscordInfo = ScriptCache.createParagraph_Wel(tab, Response.guild.name, desc, img, 42);
+
+        tab:Button({
+            Title = "Update Info",
+            Callback = function()
+                local u = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
+                if u and u.guild then
+                    DiscordInfo:SetDesc(
+                        ' <font color="#52525b">•</font> Member Count : ' .. tos(u.approximate_member_count) ..
+                        '\n <font color="#16a34a">•</font> Online Count : ' .. tos(u.approximate_presence_count)
+                    );
+                end;
+            end;
+        });
+    else
+        ScriptCache.createParagraph_Wel(tab, "Error when receiving information about the Discord server", EnCodeJ(HttpService, Response), "triangle-alert", 26, "Red");
+    end;
+
+    ScriptCache.createSection_Wel(tab, "✨ Script Infos ✨");
+
+    ScriptCache.createParagraph_Wel(tab, "Forsaken",
+        "VULX has the best <b>Forsaken</b> script, featuring invisibility, cool emotes, ESP, and other tools to enhance your gameplay.\n<font color=\"#FF0000\">Reach is still in development; to enable it, you must use <b>Config ONLY</b>.</font>",
+        "sword");
+    ScriptCache.createParagraph_Wel(tab, "Tower Defense Simulator",
+        "VULX is the only script available for <b>Tower Defense Simulator</b>. Our features are great, but we highly recommend trying it on an <b>alt account</b> or recording a macro on an alt due to the strong anti-cheat system.\n<font color=\"#FF0000\">More updates are coming soon. For now, we only have the macro feature because TTJY has been busy.</font>",
+        "shield");
+    ScriptCache.createParagraph_Wel(tab, "All Star X",
+        "VULX offers an <b>All Star X</b> script that includes an excellent macro, AFK farming, and more.\nThe game has no anti-cheat, so you don’t need to worry.",
+        "shield");
+
+    ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
+
+    ScriptCache.createParagraph_Wel(tab, "TTJY",
+        "TTJY is a Luau developer who also created the official VULX site. With 5 years of scripting experience (TTJY Hub – NeuronX – Flow - VULX), TTJY manages all VULX APIs. If you need to report a bug, you can report it directly to TTJY.",
+        "user");
+
+    ScriptCache.createParagraph_Wel(tab, "Ironic",
+        "Ironic is the founder of VULX. He usually manages VULX products like cheap Robux, accounts for sale, and oversees the community.",
+        "user");
+
+    ScriptCache.createParagraph_Wel(tab, "x.nep",
+        "x.nep is also a Luau developer who helps with VULX in coding.",
+        "user");
+
+    ScriptCache.createParagraph_Wel(tab, "Contact Us",
+        "Discord : discord.gg/c8cUR6Unay",
+        "contact"
+    );
+
+    ScriptCache.HandleUNC = {
+        Title = "Locked Feature",
+        Desc = "This function is an internal function, Please change your executor in order to use this feature.",
+        Callback = function() end
+    };
+end;
+
+------------- Script Asset / Script Cache 2 -------------
+
+GG.MobList = (PlaceId == 2753915549 and {
+    "Bandit",
+    "Monkey",
+    "Gorilla",
+    "Pirate",
+    "Brute",
+    "Desert Bandit",
+    "Desert Officer",
+    "Snow Bandit",
+    "Snowman",
+    "Chief Petty Officer",
+    "Sky Bandit",
+    "Dark Master",
+    "Toga Warrior",
+    "Gladiator",
+    "Military Soldier",
+    "Military Spy",
+    "Fishman Warrior",
+    "Fishman Commando",
+    "God's Guard",
+    "Shanda",
+    "Royal Squad",
+    "Royal Soldier",
+    "Galley Pirate",
+    "Galley Captain"
+}) or (PlaceId == 4442272183 and {
+    "Raider",
+    "Mercenary",
+    "Swan Pirate",
+    "Factory Staff",
+    "Marine Lieutenant",
+    "Marine Captain",
+    "Zombie",
+    "Vampire",
+    "Snow Trooper",
+    "Winter Warrior",
+    "Lab Subordinate",
+    "Horned Warrior",
+    "Magma Ninja",
+    "Lava Pirate",
+    "Ship Deckhand",
+    "Ship Engineer",
+    "Ship Steward",
+    "Ship Officer",
+    "Arctic Warrior",
+    "Snow Lurker",
+    "Sea Soldier",
+    "Water Fighter"
+}) or (PlaceId == 7449423635 and {
+    "Pirate Millionaire",
+    "Dragon Crew Warrior",
+    "Dragon Crew Archer",
+    "Hydra Enforcer",
+    "Venomous Assailant",
+    "Marine Commodore",
+    "Marine Rear Admiral",
+    "Fishman Raider",
+    "Fishman Captain",
+    "Forest Pirate",
+    "Mythological Pirate",
+    "Jungle Pirate",
+    "Musketeer Pirate",
+    "Reborn Skeleton",
+    "Living Zombie",
+    "Demonic Soul",
+    "Posessed Mummy",
+    "Peanut Scout",
+    "Peanut President",
+    "Ice Cream Chef",
+    "Ice Cream Commander",
+    "Cookie Crafter",
+    "Cake Guard",
+    "Baking Staff",
+    "Head Baker",
+    "Cocoa Warrior",
+    "Chocolate Bar Battler",
+    "Sweet Thief",
+    "Candy Rebel",
+    "Candy Pirate",
+    "Snow Demon",
+    "Isle Outlaw",
+    "Island Boy",
+    "Sun-kissed Warrior",
+    "Isle Champion"
+}) or {};
+GG.BossList = (PlaceId == 2753915549 and {
+    "The Gorilla King",
+    "Bobby",
+    "Yeti",
+    "Mob Leader",
+    "Vice Admiral",
+    "Warden",
+    "Chief Warden",
+    "Swan",
+    "Magma Admiral",
+    "Fishman Lord",
+    "Wysper",
+    "Thunder God",
+    "Cyborg",
+    "Saber Expert"
+}) or (PlaceId == 4442272183 and {
+    "Diamond",
+    "Jeremy",
+    "Fajita",
+    "Don Swan",
+    "Smoke Admiral",
+    "Cursed Captain",
+    "Darkbeard",
+    "Order",
+    "Awakened Ice Admiral",
+    "Tide Keeper"
+}) or (PlaceId == 7449423635 and {
+    "Stone",
+    "Hydra Leader",
+    "Kilo Admiral",
+    "Captain Elephant",
+    "Beautiful Pirate",
+    "rip_indra True Form",
+    "Longma",
+    "Soul Reaper",
+    "Cake Queen"
+}) or {};
+
+------------- WindUI -------------
 
 GG.Load_Icona = function(...)
     local Icons = {
@@ -13232,2165 +15423,6 @@ GG.Load_Icona = function(...)
     end;
     return IconModule;
 end;
-
-GG.loadsource = function(source:string):any
-    for attempt = 1, 3 do
-        local success, result = pcal(function()
-            return loadstring(source)();
-        end);
-        if success then
-            return result;
-        else
-            warn(strformat("[Flow] : loadsource_err (Attempt %d): %s", attempt, result));
-            twait();
-        end;
-    end;
-end;
-
-GG.loadScriptFromCache = function( srcName : string , fileName : string , noload : boolean , custom_time : number , is_ignore : boolean )
-    if LoaderSettings.AllowCache then
-        local CD = custom_time or 600;
-        local versionFile =  "FlowXSVersion.json"
-        local cacheFile = "FlowXS/" .. fileName;
-        local no_write = is_ignore;
-
-        if GG.ALLVersion == nil then
-            GG.ALLVersion = {};
-        end;
-    
-        if GG.ALLVersion[fileName] == nil then
-            GG.ALLVersion[fileName] = tos(tick());
-        end;
-    
-        if tick() - ton(ALLVersion[fileName]) >= CD then
-            local source = HttpGet(game, srcName);
-            GG.ALLVersion[fileName] = tos(tick());
-
-            writefile(cacheFile, source);
-
-            if not no_write then
-                local versionContent = EnCodeJ(HttpService, GG.ALLVersion);
-                writefile(versionFile, versionContent);
-            end;
-
-            warn("[Flow] : Loaded " .. fileName .. " from GitHub via auto-update");
-
-            if noload then
-                return source
-            end;
-            return loadsource(source);
-        else
-            if isfolder("FlowXS") then
-                local cachedSource = isfile(cacheFile) and readfile(cacheFile);
-
-                if not cachedSource or not isfile(versionFile) then
-                    local source = HttpGet(game, srcName);
-                    GG.ALLVersion[fileName] = tos(tick());
-
-                    writefile(cacheFile, source);
-
-                    if not no_write then
-                        local versionContent = EnCodeJ(HttpService, GG.ALLVersion);
-                        writefile(versionFile, versionContent);
-                    end;
-
-                    warn("[Flow] : Loaded " .. fileName .. " from GitHub");
-
-                    if noload then
-                        return source
-                    end;
-                    return loadsource(source);
-                else
-                    warn("[Flow] : Loaded " .. fileName .. " from device and NOT GitHub");
-
-                    if noload then
-                        return cachedSource;
-                    end;
-                    return loadsource(cachedSource);
-                end;
-            else
-                return Kick(selff, "isfolder check failed, try rejoining before reporting the bug");
-            end;
-        end;
-    else
-        local source = HttpGet(game, srcName);
-        if noload then return source; end;
-        warn("[Flow] : Loaded " .. fileName .. " via nowrite.2");
-        return loadsource(source);
-    end;
-end;
-
-GG.getReadableTime = function()
-    return os.date("%Y-%m-%d %H:%M:%S", os.time()) .. " +07:00";
-end;
-
-------------- Script Asset / Script Cache 1 -------------
-
-GG.AssetStorage = {};
-AssetStorage.Languages = function()
-    if ScriptCache.Languages then return; end;
-    if GameId == 1 then
-        ScriptCache.Languages = {
-            {
-                Key = "Hello",
-                Values = {
-                    ["en"] = "Hello",
-                    ["th"] = "สวัสดี"
-                };
-            };
-        };
-    end;
-end;
-AssetStorage.Localization = function()
-    if SetUpLanguage and ApplyLanguage then return; end; 
-    GG.SetUpLanguage = function(entries)
-        ScriptCache.localTable = ScriptCache.localTable and ScriptCache.localTable.Parent and ScriptCache.localTable or Instancen("LocalizationTable", W);
-        ScriptCache.localTable.DevelopmentLanguage = LocalizationService.SystemLocaleId;
-        ScriptCache.localTable:SetEntries(entries);
-    end;
-    GG.ApplyLanguage = function( lang : string , word : string)
-        return ScriptCache.localTable:GetString(lang, word);
-    end;
-end;
-AssetStorage.Key = function()
-    GG.UploadToGlobal_Key = GG.UploadToGlobal_Key or function( arg : {} )
-        local emptyfunction = function(...) return; end;
-        local modules : {} = {};
-        function modules:newCopy()
-            local G2L = {};
-            G2L["1"] = Instancen("ScreenGui", C);
-            G2L["1"]["IgnoreGuiInset"] = true;
-            G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.None;
-            G2L["1"]["Name"] = "MultiKey";
-            G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-            G2L["1"]["ResetOnSpawn"] = false;
-        
-            G2L["2"] = Instancen("ImageLabel", G2L["1"]);
-            G2L["2"]["ZIndex"] = 9999;
-            G2L["2"]["BorderSizePixel"] = 0;
-            G2L["2"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2"]["SliceScale"] = 0.08594;
-            G2L["2"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-            G2L["2"]["ImageColor3"] = fromRGB(25, 25, 28);
-            G2L["2"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["2"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2"]["BackgroundTransparency"] = 1;
-            G2L["2"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-            G2L["3"] = Instancen("Frame", G2L["2"]);
-            G2L["3"]["ZIndex"] = 99999;
-            G2L["3"]["BorderSizePixel"] = 0;
-            G2L["3"]["BackgroundColor3"] = fromRGB(25, 25, 28);
-            G2L["3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-            G2L["3"]["Size"] = Dim2(0, 430, 0, 0);
-            G2L["3"]["BackgroundTransparency"] = 1;
-        
-            G2L["4"] = Instancen("UIPadding", G2L["3"]);
-        
-            G2L["5"] = Instancen("Frame", G2L["3"]);
-            G2L["5"]["BorderSizePixel"] = 0;
-            G2L["5"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["5"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["5"]["BackgroundTransparency"] = 1;
-        
-        
-            G2L["6"] = Instancen("Frame", G2L["5"]);
-            G2L["6"]["BorderSizePixel"] = 0;
-            G2L["6"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["6"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["6"]["BackgroundTransparency"] = 1;
-        
-        
-            G2L["7"] = Instancen("UIListLayout", G2L["6"]);
-            G2L["7"]["Padding"] = Dim(0, 18);
-            G2L["7"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-        
-        
-            G2L["8"] = Instancen("Frame", G2L["6"]);
-            G2L["8"]["BorderSizePixel"] = 0;
-            G2L["8"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["8"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-            G2L["8"]["Size"] = Dim2(1, 0, 0, 0);
-            G2L["8"]["BackgroundTransparency"] = 1;
-        
-        
-            G2L["9"] = Instancen("Frame", G2L["8"]);
-            G2L["9"]["BorderSizePixel"] = 0;
-            G2L["9"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["9"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-            G2L["9"]["BackgroundTransparency"] = 1;
-        
-        
-            G2L["a"] = Instancen("UIListLayout", G2L["9"]);
-            G2L["a"]["Padding"] = Dim(0, 14);
-            G2L["a"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["a"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["a"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["b"] = Instancen("Frame", G2L["9"]);
-            G2L["b"]["BorderSizePixel"] = 0;
-            G2L["b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["b"]["Size"] = Dim2(0, 24, 0, 24);
-            G2L["b"]["LayoutOrder"] = -1;
-            G2L["b"]["BackgroundTransparency"] = 1;
-        
-            G2L["c"] = Instancen("ImageLabel", G2L["b"]);
-            G2L["c"]["BorderSizePixel"] = 0;
-            G2L["c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["c"]["ScaleType"] = Enum.ScaleType.Crop;
-            G2L["c"]["Image"] = [[rbxassetid://77771201330939]];
-            G2L["c"]["ImageRectSize"] = Vec2(96, 96);
-            G2L["c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["c"]["BackgroundTransparency"] = 1;
-            G2L["c"]["ImageRectOffset"] = Vec2(0, 768);
-        
-        
-            G2L["d"] = Instancen("UICorner", G2L["c"]);
-            G2L["d"]["CornerRadius"] = Dim(0, 18);
-        
-            G2L["e"] = Instancen("TextLabel", G2L["9"]);
-            G2L["e"]["BorderSizePixel"] = 0;
-            G2L["e"]["TextSize"] = 20;
-            G2L["e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["e"]["FontFace"] = Fnew("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["e"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["e"]["BackgroundTransparency"] = 1;
-            G2L["e"]["RichText"] = true;
-            G2L["e"]["Text"] = [[Select Service]];
-            G2L["e"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["f"] = Instancen("Frame", G2L["6"]);
-            G2L["f"]["BorderSizePixel"] = 0;
-            G2L["f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["f"]["Size"] = Dim2(1, 0, 0, 42);
-            G2L["f"]["BackgroundTransparency"] = 1;
-        
-            G2L["10"] = Instancen("UIListLayout", G2L["f"]);
-            G2L["10"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["10"]["Padding"] = Dim(0, 9);
-            G2L["10"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["10"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["11"] = Instancen("TextButton", G2L["f"]);
-            G2L["11"]["BorderSizePixel"] = 0;
-            G2L["11"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["11"]["AutoButtonColor"] = false;
-            G2L["11"]["TextSize"] = 14;
-            G2L["11"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["11"]["Size"] = Dim2(0.45, 0, 1, 0);
-            G2L["11"]["BackgroundTransparency"] = 1;
-            G2L["11"]["LayoutOrder"] = 2;
-            G2L["11"]["Text"] = [[]];
-            G2L["11"]["Position"] = Dim2(-0.00377, 0, 0, 0);
-        
-            G2L["12"] = Instancen("ImageLabel", G2L["11"]);
-            G2L["12"]["BorderSizePixel"] = 0;
-            G2L["12"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["12"]["SliceScale"] = 0.03906;
-            G2L["12"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["12"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["12"]["ImageTransparency"] = 1;
-            G2L["12"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["12"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["12"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["12"]["BackgroundTransparency"] = 1;
-            G2L["12"]["Name"] = [[Squircle]];
-        
-            G2L["13"] = Instancen("ImageLabel", G2L["11"]);
-            G2L["13"]["BorderSizePixel"] = 0;
-            G2L["13"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["13"]["SliceScale"] = 0.03906;
-            G2L["13"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["13"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["13"]["ImageTransparency"] = 0.95;
-            G2L["13"]["Image"] = "rbxassetid://80999662900595";
-            G2L["13"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["13"]["BackgroundTransparency"] = 1;
-            G2L["13"]["Name"] = "Special";
-        
-            G2L["14"] = Instancen("ImageLabel", G2L["11"]);
-            G2L["14"]["BorderSizePixel"] = 0;
-            G2L["14"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["14"]["SliceScale"] = 0.01953;
-            G2L["14"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["14"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["14"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["14"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["14"]["Image"] = "rbxassetid://84825982946844";
-            G2L["14"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["14"]["BackgroundTransparency"] = 1;
-            G2L["14"]["Name"] = "Shadow";
-            G2L["14"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-        
-        
-            G2L["15"] = Instancen("ImageLabel", G2L["11"]);
-            G2L["15"]["BorderSizePixel"] = 0;
-            G2L["15"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["15"]["SliceScale"] = 0.03906;
-            G2L["15"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["15"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["15"]["ImageTransparency"] = 0.85;
-            G2L["15"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["15"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["15"]["BackgroundTransparency"] = 1;
-        
-            G2L["16"] = Instancen("ImageLabel", G2L["11"]);
-            G2L["16"]["BorderSizePixel"] = 0;
-            G2L["16"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["16"]["SliceScale"] = 0.03906;
-            G2L["16"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["16"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["16"]["ImageTransparency"] = 1;
-            G2L["16"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["16"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["16"]["BackgroundTransparency"] = 1;
-            G2L["16"]["Name"] = [[Frame]];
-        
-            G2L["17"] = Instancen("UIPadding", G2L["16"]);
-            G2L["17"]["PaddingRight"] = Dim(0, 12);
-            G2L["17"]["PaddingLeft"] = Dim(0, 12);
-        
-            G2L["18"] = Instancen("UIListLayout", G2L["16"]);
-            G2L["18"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["18"]["Padding"] = Dim(0, 8);
-            G2L["18"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["18"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["18"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-        
-            G2L["19"] = Instancen("TextLabel", G2L["16"]);
-            G2L["19"]["BorderSizePixel"] = 0;
-            G2L["19"]["TextSize"] = 18;
-            G2L["19"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["19"]["FontFace"] = Fnew([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["19"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["19"]["BackgroundTransparency"] = 1;
-            G2L["19"]["RichText"] = true;
-            G2L["19"]["Text"] = [[Linkvertise]];
-            G2L["19"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["1a"] = Instancen("TextButton", G2L["f"]);
-            G2L["1a"]["BorderSizePixel"] = 0;
-            G2L["1a"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["1a"]["AutoButtonColor"] = false;
-            G2L["1a"]["TextSize"] = 14;
-            G2L["1a"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1a"]["Size"] = Dim2(0.45, 0, 1, 0);
-            G2L["1a"]["BackgroundTransparency"] = 1;
-            G2L["1a"]["LayoutOrder"] = 2;
-            G2L["1a"]["Text"] = [[]];
-            G2L["1a"]["Position"] = Dim2(-0.00377, 0, 0, 0);
-        
-            G2L["1b"] = Instancen("ImageLabel", G2L["1a"]);
-            G2L["1b"]["BorderSizePixel"] = 0;
-            G2L["1b"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1b"]["SliceScale"] = 0.03906;
-            G2L["1b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1b"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1b"]["ImageTransparency"] = 1;
-            G2L["1b"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["1b"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["1b"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1b"]["BackgroundTransparency"] = 1;
-            G2L["1b"]["Name"] = [[Squircle]];
-        
-            G2L["1c"] = Instancen("ImageLabel", G2L["1a"]);
-            G2L["1c"]["BorderSizePixel"] = 0;
-            G2L["1c"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1c"]["SliceScale"] = 0.03906;
-            G2L["1c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1c"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1c"]["ImageTransparency"] = 0.95;
-            G2L["1c"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["1c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1c"]["BackgroundTransparency"] = 1;
-            G2L["1c"]["Name"] = [[Special]];
-        
-            G2L["1d"] = Instancen("ImageLabel", G2L["1a"]);
-            G2L["1d"]["BorderSizePixel"] = 0;
-            G2L["1d"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["1d"]["SliceScale"] = 0.01953;
-            G2L["1d"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1d"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1d"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["1d"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["1d"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["1d"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["1d"]["BackgroundTransparency"] = 1;
-            G2L["1d"]["Name"] = [[Shadow]];
-            G2L["1d"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-            G2L["1e"] = Instancen("ImageLabel", G2L["1a"]);
-            G2L["1e"]["BorderSizePixel"] = 0;
-            G2L["1e"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1e"]["SliceScale"] = 0.03906;
-            G2L["1e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1e"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1e"]["ImageTransparency"] = 0.85;
-            G2L["1e"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["1e"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1e"]["BackgroundTransparency"] = 1;
-        
-            G2L["1f"] = Instancen("ImageLabel", G2L["1a"]);
-            G2L["1f"]["BorderSizePixel"] = 0;
-            G2L["1f"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1f"]["SliceScale"] = 0.03906;
-            G2L["1f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1f"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1f"]["ImageTransparency"] = 1;
-            G2L["1f"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["1f"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1f"]["BackgroundTransparency"] = 1;
-            G2L["1f"]["Name"] = [[Frame]];
-        
-            G2L["20"] = Instancen("UIPadding", G2L["1f"]);
-            G2L["20"]["PaddingRight"] = Dim(0, 12);
-            G2L["20"]["PaddingLeft"] = Dim(0, 12);
-        
-            G2L["21"] = Instancen("UIListLayout", G2L["1f"]);
-            G2L["21"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["21"]["Padding"] = Dim(0, 8);
-            G2L["21"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["21"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["21"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["22"] = Instancen("TextLabel", G2L["1f"]);
-            G2L["22"]["BorderSizePixel"] = 0;
-            G2L["22"]["TextSize"] = 18;
-            G2L["22"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["22"]["FontFace"] = Fnew([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["22"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["22"]["BackgroundTransparency"] = 1;
-            G2L["22"]["RichText"] = true;
-            G2L["22"]["Text"] = "-";
-            G2L["22"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["23"] = Instancen("UIPadding", G2L["6"]);
-            G2L["23"]["PaddingTop"] = Dim(0, 16);
-            G2L["23"]["PaddingRight"] = Dim(0, 16);
-            G2L["23"]["PaddingLeft"] = Dim(0, 16);
-            G2L["23"]["PaddingBottom"] = Dim(0, 16);
-        
-            G2L["24"] = Instancen("Frame", G2L["6"]);
-            G2L["24"]["BorderSizePixel"] = 0;
-            G2L["24"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["24"]["Size"] = Dim2(1, 0, 0, 42);
-            G2L["24"]["LayoutOrder"] = 100;
-            G2L["24"]["BackgroundTransparency"] = 1;
-        
-            G2L["25"] = Instancen("UIListLayout", G2L["24"]);
-            G2L["25"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Right;
-            G2L["25"]["Padding"] = Dim(0, 9);
-            G2L["25"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["25"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["26"] = Instancen("TextButton", G2L["24"]);
-            G2L["26"]["BorderSizePixel"] = 0;
-            G2L["26"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["26"]["AutoButtonColor"] = false;
-            G2L["26"]["TextSize"] = 14;
-            G2L["26"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["26"]["AutomaticSize"] = Enum.AutomaticSize.X;
-            G2L["26"]["Size"] = Dim2(0, 0, 1, 0);
-            G2L["26"]["BackgroundTransparency"] = 1;
-            G2L["26"]["LayoutOrder"] = 2;
-            G2L["26"]["Text"] = [[]];
-        
-            G2L["27"] = Instancen("ImageLabel", G2L["26"]);
-            G2L["27"]["BorderSizePixel"] = 0;
-            G2L["27"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["27"]["SliceScale"] = 0.03906;
-            G2L["27"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["27"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["27"]["ImageTransparency"] = 1;
-            G2L["27"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["27"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["27"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["27"]["BackgroundTransparency"] = 1;
-            G2L["27"]["Name"] = [[Squircle]];
-        
-            G2L["28"] = Instancen("ImageLabel", G2L["26"]);
-            G2L["28"]["BorderSizePixel"] = 0;
-            G2L["28"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["28"]["SliceScale"] = 0.03906;
-            G2L["28"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["28"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["28"]["ImageTransparency"] = 0.95;
-            G2L["28"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["28"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["28"]["BackgroundTransparency"] = 1;
-            G2L["28"]["Name"] = [[Special]];
-        
-            G2L["29"] = Instancen("ImageLabel", G2L["26"]);
-            G2L["29"]["BorderSizePixel"] = 0;
-            G2L["29"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["29"]["SliceScale"] = 0.01953;
-            G2L["29"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["29"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["29"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["29"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["29"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["29"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["29"]["BackgroundTransparency"] = 1;
-            G2L["29"]["Name"] = [[Shadow]];
-            G2L["29"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-            G2L["2a"] = Instancen("ImageLabel", G2L["26"]);
-            G2L["2a"]["BorderSizePixel"] = 0;
-            G2L["2a"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2a"]["SliceScale"] = 0.03906;
-            G2L["2a"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2a"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2a"]["ImageTransparency"] = 0.85;
-            G2L["2a"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["2a"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2a"]["BackgroundTransparency"] = 1;
-        
-            G2L["2b"] = Instancen("ImageLabel", G2L["26"]);
-            G2L["2b"]["BorderSizePixel"] = 0;
-            G2L["2b"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2b"]["SliceScale"] = 0.03906;
-            G2L["2b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2b"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2b"]["ImageTransparency"] = 1;
-            G2L["2b"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2b"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2b"]["BackgroundTransparency"] = 1;
-            G2L["2b"]["Name"] = [[Frame]];
-        
-            G2L["2c"] = Instancen("UIPadding", G2L["2b"]);
-            G2L["2c"]["PaddingRight"] = Dim(0, 12);
-            G2L["2c"]["PaddingLeft"] = Dim(0, 12);
-        
-            G2L["2d"] = Instancen("UIListLayout", G2L["2b"]);
-            G2L["2d"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["2d"]["Padding"] = Dim(0, 8);
-            G2L["2d"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["2d"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["2d"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["2e"] = Instancen("TextLabel", G2L["2b"]);
-            G2L["2e"]["BorderSizePixel"] = 0;
-            G2L["2e"]["TextSize"] = 18;
-            G2L["2e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2e"]["FontFace"] = Fnew([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["2e"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["2e"]["BackgroundTransparency"] = 1;
-            G2L["2e"]["RichText"] = true;
-            G2L["2e"]["Text"] = [[Cancel]];
-            G2L["2e"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["2f"] = Instancen("Frame", G2L["6"]);
-            G2L["2f"]["BorderSizePixel"] = 0;
-            G2L["2f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2f"]["Size"] = Dim2(1, 0, 0, 42);
-            G2L["2f"]["BackgroundTransparency"] = 1;
-        
-            G2L["30"] = Instancen("UIListLayout", G2L["2f"]);
-            G2L["30"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["30"]["Padding"] = Dim(0, 9);
-            G2L["30"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["30"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["31"] = Instancen("TextButton", G2L["2f"]);
-            G2L["31"]["BorderSizePixel"] = 0;
-            G2L["31"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["31"]["AutoButtonColor"] = false;
-            G2L["31"]["TextSize"] = 14;
-            G2L["31"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["31"]["Size"] = Dim2(0.45, 0, 1, 0);
-            G2L["31"]["BackgroundTransparency"] = 1;
-            G2L["31"]["LayoutOrder"] = 2;
-            G2L["31"]["Text"] = [[]];
-            G2L["31"]["Position"] = Dim2(-0.00377, 0, 0, 0);
-        
-            G2L["32"] = Instancen("ImageLabel", G2L["31"]);
-            G2L["32"]["BorderSizePixel"] = 0;
-            G2L["32"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["32"]["SliceScale"] = 0.03906;
-            G2L["32"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["32"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["32"]["ImageTransparency"] = 1;
-            G2L["32"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["32"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["32"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["32"]["BackgroundTransparency"] = 1;
-            G2L["32"]["Name"] = [[Squircle]];
-        
-            G2L["33"] = Instancen("ImageLabel", G2L["31"]);
-            G2L["33"]["BorderSizePixel"] = 0;
-            G2L["33"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["33"]["SliceScale"] = 0.03906;
-            G2L["33"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["33"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["33"]["ImageTransparency"] = 0.95;
-            G2L["33"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["33"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["33"]["BackgroundTransparency"] = 1;
-            G2L["33"]["Name"] = [[Special]];
-        
-            G2L["34"] = Instancen("ImageLabel", G2L["31"]);
-            G2L["34"]["BorderSizePixel"] = 0;
-            G2L["34"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["34"]["SliceScale"] = 0.01953;
-            G2L["34"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["34"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["34"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["34"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["34"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["34"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["34"]["BackgroundTransparency"] = 1;
-            G2L["34"]["Name"] = [[Shadow]];
-            G2L["34"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-            G2L["35"] = Instancen("ImageLabel", G2L["31"]);
-            G2L["35"]["BorderSizePixel"] = 0;
-            G2L["35"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["35"]["SliceScale"] = 0.03906;
-            G2L["35"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["35"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["35"]["ImageTransparency"] = 0.85;
-            G2L["35"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["35"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["35"]["BackgroundTransparency"] = 1;
-        
-            G2L["36"] = Instancen("ImageLabel", G2L["31"]);
-            G2L["36"]["BorderSizePixel"] = 0;
-            G2L["36"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["36"]["SliceScale"] = 0.03906;
-            G2L["36"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["36"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["36"]["ImageTransparency"] = 1;
-            G2L["36"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["36"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["36"]["BackgroundTransparency"] = 1;
-            G2L["36"]["Name"] = [[Frame]];
-        
-            G2L["37"] = Instancen("UIPadding", G2L["36"]);
-            G2L["37"]["PaddingRight"] = Dim(0, 12);
-            G2L["37"]["PaddingLeft"] = Dim(0, 12);
-        
-            G2L["38"] = Instancen("UIListLayout", G2L["36"]);
-            G2L["38"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["38"]["Padding"] = Dim(0, 8);
-            G2L["38"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["38"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["38"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["39"] = Instancen("TextLabel", G2L["36"]);
-            G2L["39"]["BorderSizePixel"] = 0;
-            G2L["39"]["TextSize"] = 18;
-            G2L["39"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["39"]["FontFace"] = Fnew([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["39"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["39"]["BackgroundTransparency"] = 1;
-            G2L["39"]["RichText"] = true;
-            G2L["39"]["Text"] = "-";
-            G2L["39"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["3a"] = Instancen("TextButton", G2L["2f"]);
-            G2L["3a"]["BorderSizePixel"] = 0;
-            G2L["3a"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["3a"]["AutoButtonColor"] = false;
-            G2L["3a"]["TextSize"] = 14;
-            G2L["3a"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3a"]["Size"] = Dim2(0.45, 0, 1, 0);
-            G2L["3a"]["BackgroundTransparency"] = 1;
-            G2L["3a"]["LayoutOrder"] = 2;
-            G2L["3a"]["Text"] = [[]];
-            G2L["3a"]["Position"] = Dim2(-0.00377, 0, 0, 0);
-        
-            G2L["3b"] = Instancen("ImageLabel", G2L["3a"]);
-            G2L["3b"]["BorderSizePixel"] = 0;
-            G2L["3b"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["3b"]["SliceScale"] = 0.03906;
-            G2L["3b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3b"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["3b"]["ImageTransparency"] = 1;
-            G2L["3b"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["3b"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["3b"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["3b"]["BackgroundTransparency"] = 1;
-            G2L["3b"]["Name"] = [[Squircle]];
-        
-            G2L["3c"] = Instancen("ImageLabel", G2L["3a"]);
-            G2L["3c"]["BorderSizePixel"] = 0;
-            G2L["3c"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["3c"]["SliceScale"] = 0.03906;
-            G2L["3c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3c"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["3c"]["ImageTransparency"] = 0.95;
-            G2L["3c"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["3c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["3c"]["BackgroundTransparency"] = 1;
-            G2L["3c"]["Name"] = [[Special]];
-        
-            G2L["3d"] = Instancen("ImageLabel", G2L["3a"]);
-            G2L["3d"]["BorderSizePixel"] = 0;
-            G2L["3d"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["3d"]["SliceScale"] = 0.01953;
-            G2L["3d"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3d"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["3d"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["3d"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["3d"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["3d"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["3d"]["BackgroundTransparency"] = 1;
-            G2L["3d"]["Name"] = [[Shadow]];
-            G2L["3d"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-            G2L["3e"] = Instancen("ImageLabel", G2L["3a"]);
-            G2L["3e"]["BorderSizePixel"] = 0;
-            G2L["3e"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["3e"]["SliceScale"] = 0.03906;
-            G2L["3e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3e"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["3e"]["ImageTransparency"] = 0.85;
-            G2L["3e"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["3e"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["3e"]["BackgroundTransparency"] = 1;
-        
-            G2L["3f"] = Instancen("ImageLabel", G2L["3a"]);
-            G2L["3f"]["BorderSizePixel"] = 0;
-            G2L["3f"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["3f"]["SliceScale"] = 0.03906;
-            G2L["3f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["3f"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["3f"]["ImageTransparency"] = 1;
-            G2L["3f"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["3f"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["3f"]["BackgroundTransparency"] = 1;
-            G2L["3f"]["Name"] = [[Frame]];
-        
-            G2L["40"] = Instancen("UIPadding", G2L["3f"]);
-            G2L["40"]["PaddingRight"] = Dim(0, 12);
-            G2L["40"]["PaddingLeft"] = Dim(0, 12);
-        
-            G2L["41"] = Instancen("UIListLayout", G2L["3f"]);
-            G2L["41"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["41"]["Padding"] = Dim(0, 8);
-            G2L["41"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["41"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["41"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-            G2L["42"] = Instancen("TextLabel", G2L["3f"]);
-            G2L["42"]["BorderSizePixel"] = 0;
-            G2L["42"]["TextSize"] = 18;
-            G2L["42"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["42"]["FontFace"] = Fnew([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["42"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["42"]["BackgroundTransparency"] = 1;
-            G2L["42"]["RichText"] = true;
-            G2L["42"]["Text"] = "-";
-            G2L["42"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-            G2L["43"] = Instancen("UIScale", G2L["2"]);
-        
-            G2L["44"] = Instancen("ImageLabel", G2L["2"]);
-            G2L["44"]["BorderSizePixel"] = 0;
-            G2L["44"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["44"]["SliceScale"] = 0.08594;
-            G2L["44"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["44"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["44"]["ImageTransparency"] = 0.9;
-            G2L["44"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["44"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["44"]["BackgroundTransparency"] = 1;
-        
-            G2L["45"] = Instancen("UIGradient", G2L["44"]);
-            G2L["45"]["Rotation"] = 90;
-            G2L["45"]["Transparency"] = NSnew{NSKnew(0.000, 0),NSKnew(1.000, 1)};
-        
-            G2L["26"].Activated:Connect(function()
-                G2L["1"]:Destroy();
-                G2L["1"] = nil;
-                G2L = nil;
-            end);
-            G2L["11"].Activated:Connect(function()
-                G2L["1"]:Destroy();
-                G2L["1"] = nil;
-                G2L = nil;
-                return setc("https://link-target.net/657698/elNaqIvsbfuh");
-            end);
-        
-            return G2L;
-        end;
-        function modules:new( arg )
-            local G2L = {};
-            local tbl = {};
-            local configu = {
-                Auth = arg and arg.Auth or emptyfunction;
-                GetKey = arg and arg.GetKey or emptyfunction;
-            };
-        
-            local G2L = {};
-        
-            G2L["1"] = Instancen("ScreenGui", C);
-            G2L["1"]["IgnoreGuiInset"] = true;
-            G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.None;
-            G2L["1"]["Name"] = [[FlowAuth]];
-            G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-            G2L["1"]["ResetOnSpawn"] = false;
-            
-            G2L["2"] = Instancen("ImageLabel", G2L["1"]);
-            G2L["2"]["ZIndex"] = 9999;
-            G2L["2"]["BorderSizePixel"] = 0;
-            G2L["2"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2"]["SliceScale"] = 0.08594;
-            G2L["2"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-            G2L["2"]["ImageColor3"] = fromRGB(25, 25, 28);
-            G2L["2"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["2"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2"]["BackgroundTransparency"] = 1;
-            G2L["2"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-            
-            G2L["3"] = Instancen("Frame", G2L["2"]);
-            G2L["3"]["ZIndex"] = 99999;
-            G2L["3"]["BorderSizePixel"] = 0;
-            G2L["3"]["BackgroundColor3"] = fromRGB(25, 25, 28);
-            G2L["3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-            G2L["3"]["Size"] = Dim2(0, 430, 0, 0);
-            G2L["3"]["BackgroundTransparency"] = 1;
-            
-            G2L["4"] = Instancen("UIPadding", G2L["3"]);
-            
-            G2L["5"] = Instancen("Frame", G2L["3"]);
-            G2L["5"]["BorderSizePixel"] = 0;
-            G2L["5"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["5"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["5"]["BackgroundTransparency"] = 1;
-            
-            G2L["6"] = Instancen("Frame", G2L["5"]);
-            G2L["6"]["BorderSizePixel"] = 0;
-            G2L["6"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["6"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["6"]["BackgroundTransparency"] = 1;
-            
-            G2L["7"] = Instancen("UIListLayout", G2L["6"]);
-            G2L["7"]["Padding"] = Dim(0, 18);
-            G2L["7"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            
-            G2L["8"] = Instancen("Frame", G2L["6"]);
-            G2L["8"]["BorderSizePixel"] = 0;
-            G2L["8"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["8"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-            G2L["8"]["Size"] = Dim2(1, 0, 0, 0);
-            G2L["8"]["BackgroundTransparency"] = 1;
-        
-            
-            G2L["9"] = Instancen("Frame", G2L["8"]);
-            G2L["9"]["BorderSizePixel"] = 0;
-            G2L["9"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["9"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-            G2L["9"]["BackgroundTransparency"] = 1;
-            
-            G2L["a"] = Instancen("UIListLayout", G2L["9"]);
-            G2L["a"]["Padding"] = Dim(0, 14);
-            G2L["a"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["a"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["a"]["FillDirection"] = Enum.FillDirection.Horizontal;
-            
-            G2L["b"] = Instancen("Frame", G2L["9"]);
-            G2L["b"]["BorderSizePixel"] = 0;
-            G2L["b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["b"]["Size"] = Dim2(0, 24, 0, 24);
-            G2L["b"]["LayoutOrder"] = -1;
-            G2L["b"]["BackgroundTransparency"] = 1;
-            
-            G2L["c"] = Instancen("ImageLabel", G2L["b"]);
-            G2L["c"]["BorderSizePixel"] = 0;
-            G2L["c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["c"]["ScaleType"] = Enum.ScaleType.Crop;
-            G2L["c"]["Image"] = [[rbxassetid://77771201330939]];
-            G2L["c"]["ImageRectSize"] = Vec2(96, 96);
-            G2L["c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["c"]["BackgroundTransparency"] = 1;
-            G2L["c"]["ImageRectOffset"] = Vec2(0, 768);
-            
-            G2L["d"] = Instancen("UICorner", G2L["c"]);
-            G2L["d"]["CornerRadius"] = Dim(0, 18);
-            
-            G2L["e"] = Instancen("TextLabel", G2L["9"]);
-            G2L["e"]["BorderSizePixel"] = 0;
-            G2L["e"]["TextSize"] = 20;
-            G2L["e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["e"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["e"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["e"]["BackgroundTransparency"] = 1;
-            G2L["e"]["RichText"] = true;
-            G2L["e"]["Text"] = [[Authentication]];
-            G2L["e"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-            
-            G2L["f"] = Instancen("TextLabel", G2L["6"]);
-            G2L["f"]["TextWrapped"] = true;
-            G2L["f"]["BorderSizePixel"] = 0;
-            G2L["f"]["TextSize"] = 18;
-            G2L["f"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-            G2L["f"]["TextTransparency"] = 0.2;
-            G2L["f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["f"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-            G2L["f"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["f"]["BackgroundTransparency"] = 1;
-            G2L["f"]["RichText"] = true;
-            G2L["f"]["Size"] = Dim2(1, 0, 0, 0);
-            G2L["f"]["Text"] = 'We are very <font color="rgb(0, 255, 135)">s</font><font color="rgb(19, 251, 159)">o</font><font color="rgb(38, 248, 183)">r</font><font color="rgb(57, 245, 207)">r</font><font color="rgb(76, 242, 231)">y</font>, to have this auth or key system but this means a lot to us, this is where you support our project. Linkvertise has "no" 1H waiting time.';
-            G2L["f"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-            
-            G2L["10"] = Instancen("Frame", G2L["6"]);
-            G2L["10"]["BorderSizePixel"] = 0;
-            G2L["10"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["10"]["Size"] = Dim2(1, 0, 0, 42);
-            G2L["10"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["11"] = Instancen("UIListLayout", G2L["10"]);
-            G2L["11"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Right;
-            G2L["11"]["Padding"] = Dim(0, 9);
-            G2L["11"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["11"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-        
-            
-            G2L["12"] = Instancen("TextButton", G2L["10"]);
-            G2L["12"]["BorderSizePixel"] = 0;
-            G2L["12"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["12"]["AutoButtonColor"] = false;
-            G2L["12"]["TextSize"] = 14;
-            G2L["12"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["12"]["AutomaticSize"] = Enum.AutomaticSize.X;
-            G2L["12"]["Size"] = Dim2(0, 0, 1, 0);
-            G2L["12"]["BackgroundTransparency"] = 1;
-            G2L["12"]["LayoutOrder"] = 2;
-            G2L["12"]["Text"] = [[]];
-        
-        
-            
-            G2L["13"] = Instancen("ImageLabel", G2L["12"]);
-            G2L["13"]["BorderSizePixel"] = 0;
-            G2L["13"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["13"]["SliceScale"] = 0.03906;
-            G2L["13"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["13"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["13"]["ImageTransparency"] = 1;
-            G2L["13"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["13"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["13"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["13"]["BackgroundTransparency"] = 1;
-            G2L["13"]["Name"] = [[Squircle]];
-        
-        
-            
-            G2L["14"] = Instancen("ImageLabel", G2L["12"]);
-            G2L["14"]["BorderSizePixel"] = 0;
-            G2L["14"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["14"]["SliceScale"] = 0.03906;
-            G2L["14"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["14"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["14"]["ImageTransparency"] = 0.95;
-            G2L["14"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["14"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["14"]["BackgroundTransparency"] = 1;
-            G2L["14"]["Name"] = [[Special]];
-        
-        
-            
-            G2L["15"] = Instancen("ImageLabel", G2L["12"]);
-            G2L["15"]["BorderSizePixel"] = 0;
-            G2L["15"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["15"]["SliceScale"] = 0.01953;
-            G2L["15"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["15"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["15"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["15"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["15"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["15"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["15"]["BackgroundTransparency"] = 1;
-            G2L["15"]["Name"] = [[Shadow]];
-            G2L["15"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-        
-            
-            G2L["16"] = Instancen("ImageLabel", G2L["12"]);
-            G2L["16"]["BorderSizePixel"] = 0;
-            G2L["16"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["16"]["SliceScale"] = 0.03906;
-            G2L["16"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["16"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["16"]["ImageTransparency"] = 0.85;
-            G2L["16"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["16"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["16"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["17"] = Instancen("ImageLabel", G2L["12"]);
-            G2L["17"]["BorderSizePixel"] = 0;
-            G2L["17"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["17"]["SliceScale"] = 0.03906;
-            G2L["17"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["17"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["17"]["ImageTransparency"] = 1;
-            G2L["17"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["17"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["17"]["BackgroundTransparency"] = 1;
-            G2L["17"]["Name"] = [[Frame]];
-        
-        
-            
-            G2L["18"] = Instancen("UIPadding", G2L["17"]);
-            G2L["18"]["PaddingRight"] = Dim(0, 12);
-            G2L["18"]["PaddingLeft"] = Dim(0, 12);
-        
-        
-            
-            G2L["19"] = Instancen("UIListLayout", G2L["17"]);
-            G2L["19"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["19"]["Padding"] = Dim(0, 8);
-            G2L["19"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["19"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["19"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-        
-            
-            G2L["1a"] = Instancen("TextLabel", G2L["17"]);
-            G2L["1a"]["BorderSizePixel"] = 0;
-            G2L["1a"]["TextSize"] = 18;
-            G2L["1a"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1a"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["1a"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["1a"]["BackgroundTransparency"] = 1;
-            G2L["1a"]["RichText"] = true;
-            G2L["1a"]["Text"] = [[Cancel]];
-            G2L["1a"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-        
-            
-            G2L["1b"] = Instancen("TextButton", G2L["10"]);
-            G2L["1b"]["BorderSizePixel"] = 0;
-            G2L["1b"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["1b"]["AutoButtonColor"] = false;
-            G2L["1b"]["TextSize"] = 14;
-            G2L["1b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1b"]["AutomaticSize"] = Enum.AutomaticSize.X;
-            G2L["1b"]["Size"] = Dim2(0, 0, 1, 0);
-            G2L["1b"]["BackgroundTransparency"] = 1;
-            G2L["1b"]["LayoutOrder"] = 3;
-            G2L["1b"]["Text"] = [[]];
-        
-        
-            
-            G2L["1c"] = Instancen("ImageLabel", G2L["1b"]);
-            G2L["1c"]["BorderSizePixel"] = 0;
-            G2L["1c"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1c"]["SliceScale"] = 0.03906;
-            G2L["1c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1c"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1c"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["1c"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["1c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1c"]["BackgroundTransparency"] = 1;
-            G2L["1c"]["Name"] = [[Squircle]];
-        
-        
-            
-            G2L["1d"] = Instancen("ImageLabel", G2L["1b"]);
-            G2L["1d"]["BorderSizePixel"] = 0;
-            G2L["1d"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1d"]["SliceScale"] = 0.03906;
-            G2L["1d"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1d"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1d"]["ImageTransparency"] = 1;
-            G2L["1d"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["1d"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1d"]["BackgroundTransparency"] = 1;
-            G2L["1d"]["Name"] = [[Special]];
-        
-        
-            
-            G2L["1e"] = Instancen("ImageLabel", G2L["1b"]);
-            G2L["1e"]["BorderSizePixel"] = 0;
-            G2L["1e"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["1e"]["SliceScale"] = 0.01953;
-            G2L["1e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1e"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1e"]["ImageTransparency"] = 1;
-            G2L["1e"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["1e"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["1e"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["1e"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["1e"]["BackgroundTransparency"] = 1;
-            G2L["1e"]["Name"] = [[Shadow]];
-            G2L["1e"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-        
-            
-            G2L["1f"] = Instancen("ImageLabel", G2L["1b"]);
-            G2L["1f"]["BorderSizePixel"] = 0;
-            G2L["1f"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["1f"]["SliceScale"] = 0.03906;
-            G2L["1f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["1f"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["1f"]["ImageTransparency"] = 0.95;
-            G2L["1f"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["1f"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["1f"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["20"] = Instancen("ImageLabel", G2L["1b"]);
-            G2L["20"]["BorderSizePixel"] = 0;
-            G2L["20"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["20"]["SliceScale"] = 0.03906;
-            G2L["20"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["20"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["20"]["ImageTransparency"] = 1;
-            G2L["20"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["20"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["20"]["BackgroundTransparency"] = 1;
-            G2L["20"]["Name"] = [[Frame]];
-        
-        
-            
-            G2L["21"] = Instancen("UIPadding", G2L["20"]);
-            G2L["21"]["PaddingRight"] = Dim(0, 12);
-            G2L["21"]["PaddingLeft"] = Dim(0, 12);
-        
-        
-            
-            G2L["22"] = Instancen("UIListLayout", G2L["20"]);
-            G2L["22"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["22"]["Padding"] = Dim(0, 8);
-            G2L["22"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["22"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["22"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-        
-            
-            G2L["23"] = Instancen("ImageLabel", G2L["20"]);
-            G2L["23"]["BorderSizePixel"] = 0;
-            G2L["23"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["23"]["ImageColor3"] = fromRGB(162, 162, 171);
-            G2L["23"]["Image"] = [[rbxassetid://131526378523863]];
-            G2L["23"]["ImageRectSize"] = Vec2(96, 96);
-            G2L["23"]["Size"] = Dim2(0, 21, 0, 21);
-            G2L["23"]["BackgroundTransparency"] = 1;
-            G2L["23"]["ImageRectOffset"] = Vec2(480, 768);
-        
-        
-            
-            G2L["24"] = Instancen("TextLabel", G2L["20"]);
-            G2L["24"]["BorderSizePixel"] = 0;
-            G2L["24"]["TextSize"] = 18;
-            G2L["24"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["24"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["24"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["24"]["BackgroundTransparency"] = 1;
-            G2L["24"]["RichText"] = true;
-            G2L["24"]["Text"] = [[Continue]];
-            G2L["24"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-        
-            
-            G2L["25"] = Instancen("TextBox", G2L["10"]);
-            G2L["25"]["BorderSizePixel"] = 0;
-            G2L["25"]["TextSize"] = 14;
-            G2L["25"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["25"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["25"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["25"]["ClipsDescendants"] = true;
-            G2L["25"]["PlaceholderText"] = [[Enter Key...]];
-            G2L["25"]["Size"] = Dim2(0.17, 0, 1, 0);
-            G2L["25"]["BorderColor3"] = fromRGB(0, 0, 0);
-            G2L["25"]["Text"] = [[]];
-            G2L["25"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["26"] = Instancen("ImageLabel", G2L["25"]);
-            G2L["26"]["BorderSizePixel"] = 0;
-            G2L["26"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["26"]["SliceScale"] = 0.03906;
-            G2L["26"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["26"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["26"]["ImageTransparency"] = 1;
-            G2L["26"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["26"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["26"]["BackgroundTransparency"] = 1;
-            G2L["26"]["Name"] = [[Frame]];
-        
-        
-            
-            G2L["27"] = Instancen("ImageLabel", G2L["25"]);
-            G2L["27"]["BorderSizePixel"] = 0;
-            G2L["27"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["27"]["SliceScale"] = 0.03906;
-            G2L["27"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["27"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["27"]["ImageTransparency"] = 0.85;
-            G2L["27"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["27"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["27"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["28"] = Instancen("ImageLabel", G2L["25"]);
-            G2L["28"]["BorderSizePixel"] = 0;
-            G2L["28"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["28"]["SliceScale"] = 0.01953;
-            G2L["28"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["28"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["28"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["28"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["28"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["28"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["28"]["BackgroundTransparency"] = 1;
-            G2L["28"]["Name"] = [[Shadow]];
-            G2L["28"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-        
-            
-            G2L["29"] = Instancen("ImageLabel", G2L["25"]);
-            G2L["29"]["BorderSizePixel"] = 0;
-            G2L["29"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["29"]["SliceScale"] = 0.03906;
-            G2L["29"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["29"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["29"]["ImageTransparency"] = 0.95;
-            G2L["29"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["29"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["29"]["BackgroundTransparency"] = 1;
-            G2L["29"]["Name"] = [[Special]];
-        
-        
-            
-            G2L["2a"] = Instancen("ImageLabel", G2L["25"]);
-            G2L["2a"]["BorderSizePixel"] = 0;
-            G2L["2a"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2a"]["SliceScale"] = 0.03906;
-            G2L["2a"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2a"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2a"]["ImageTransparency"] = 1;
-            G2L["2a"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["2a"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2a"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2a"]["BackgroundTransparency"] = 1;
-            G2L["2a"]["Name"] = [[Squircle]];
-        
-        
-            
-            G2L["2b"] = Instancen("TextButton", G2L["10"]);
-            G2L["2b"]["BorderSizePixel"] = 0;
-            G2L["2b"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["2b"]["AutoButtonColor"] = false;
-            G2L["2b"]["TextSize"] = 14;
-            G2L["2b"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2b"]["AutomaticSize"] = Enum.AutomaticSize.X;
-            G2L["2b"]["Size"] = Dim2(0, 0, 1, 0);
-            G2L["2b"]["BackgroundTransparency"] = 1;
-            G2L["2b"]["LayoutOrder"] = 1;
-            G2L["2b"]["Text"] = [[]];
-        
-        
-            
-            G2L["2c"] = Instancen("ImageLabel", G2L["2b"]);
-            G2L["2c"]["BorderSizePixel"] = 0;
-            G2L["2c"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2c"]["SliceScale"] = 0.03906;
-            G2L["2c"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2c"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2c"]["ImageTransparency"] = 1;
-            G2L["2c"]["ImageColor3"] = fromRGB(83, 83, 92);
-            G2L["2c"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2c"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2c"]["BackgroundTransparency"] = 1;
-            G2L["2c"]["Name"] = [[Squircle]];
-        
-        
-            
-            G2L["2d"] = Instancen("ImageLabel", G2L["2b"]);
-            G2L["2d"]["BorderSizePixel"] = 0;
-            G2L["2d"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2d"]["SliceScale"] = 0.03906;
-            G2L["2d"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2d"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2d"]["ImageTransparency"] = 0.95;
-            G2L["2d"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["2d"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2d"]["BackgroundTransparency"] = 1;
-            G2L["2d"]["Name"] = [[Special]];
-        
-        
-            
-            G2L["2e"] = Instancen("ImageLabel", G2L["2b"]);
-            G2L["2e"]["BorderSizePixel"] = 0;
-            G2L["2e"]["SliceCenter"] = Rectn(512, 512, 512, 512);
-            G2L["2e"]["SliceScale"] = 0.01953;
-            G2L["2e"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2e"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2e"]["ImageColor3"] = fromRGB(0, 0, 0);
-            G2L["2e"]["AnchorPoint"] = Vec2(0.5, 0.5);
-            G2L["2e"]["Image"] = [[rbxassetid://84825982946844]];
-            G2L["2e"]["Size"] = Dim2(1, 3, 1, 3);
-            G2L["2e"]["BackgroundTransparency"] = 1;
-            G2L["2e"]["Name"] = [[Shadow]];
-            G2L["2e"]["Position"] = Dim2(0.5, 0, 0.5, 0);
-        
-        
-            
-            G2L["2f"] = Instancen("ImageLabel", G2L["2b"]);
-            G2L["2f"]["BorderSizePixel"] = 0;
-            G2L["2f"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["2f"]["SliceScale"] = 0.03906;
-            G2L["2f"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["2f"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["2f"]["ImageTransparency"] = 0.85;
-            G2L["2f"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["2f"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["2f"]["BackgroundTransparency"] = 1;
-        
-        
-            
-            G2L["30"] = Instancen("ImageLabel", G2L["2b"]);
-            G2L["30"]["BorderSizePixel"] = 0;
-            G2L["30"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["30"]["SliceScale"] = 0.03906;
-            G2L["30"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["30"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["30"]["ImageTransparency"] = 1;
-            G2L["30"]["Image"] = [[rbxassetid://80999662900595]];
-            G2L["30"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["30"]["BackgroundTransparency"] = 1;
-            G2L["30"]["Name"] = [[Frame]];
-        
-        
-            
-            G2L["31"] = Instancen("UIPadding", G2L["30"]);
-            G2L["31"]["PaddingRight"] = Dim(0, 12);
-            G2L["31"]["PaddingLeft"] = Dim(0, 12);
-        
-        
-            
-            G2L["32"] = Instancen("UIListLayout", G2L["30"]);
-            G2L["32"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-            G2L["32"]["Padding"] = Dim(0, 8);
-            G2L["32"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-            G2L["32"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-            G2L["32"]["FillDirection"] = Enum.FillDirection.Horizontal;
-        
-        
-            
-            G2L["33"] = Instancen("TextLabel", G2L["30"]);
-            G2L["33"]["BorderSizePixel"] = 0;
-            G2L["33"]["TextSize"] = 18;
-            G2L["33"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["33"]["FontFace"] = Font.new([[rbxassetid://12187365364]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-            G2L["33"]["TextColor3"] = fromRGB(255, 255, 255);
-            G2L["33"]["BackgroundTransparency"] = 1;
-            G2L["33"]["RichText"] = true;
-            G2L["33"]["Text"] = [[Copy Link]];
-            G2L["33"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-        
-        
-            
-            G2L["34"] = Instancen("UIPadding", G2L["6"]);
-            G2L["34"]["PaddingTop"] = Dim(0, 16);
-            G2L["34"]["PaddingRight"] = Dim(0, 16);
-            G2L["34"]["PaddingLeft"] = Dim(0, 16);
-            G2L["34"]["PaddingBottom"] = Dim(0, 16);
-        
-        
-            
-            G2L["35"] = Instancen("UIScale", G2L["2"]);
-        
-        
-        
-            
-            G2L["36"] = Instancen("ImageLabel", G2L["2"]);
-            G2L["36"]["BorderSizePixel"] = 0;
-            G2L["36"]["SliceCenter"] = Rectn(256, 256, 256, 256);
-            G2L["36"]["SliceScale"] = 0.08594;
-            G2L["36"]["BackgroundColor3"] = fromRGB(255, 255, 255);
-            G2L["36"]["ScaleType"] = Enum.ScaleType.Slice;
-            G2L["36"]["ImageTransparency"] = 0.9;
-            G2L["36"]["Image"] = [[rbxassetid://117788349049947]];
-            G2L["36"]["Size"] = Dim2(1, 0, 1, 0);
-            G2L["36"]["BackgroundTransparency"] = 1;
-            
-            G2L["37"] = Instancen("UIGradient", G2L["36"]);
-            G2L["37"]["Rotation"] = 90;
-            G2L["37"]["Transparency"] = NSnew{NSKnew(0.000, 0),NSKnew(1.000, 1)};
-        
-            G2L["1b"].MouseButton1Click:Connect(function()
-                return configu.Auth(G2L["25"].Text);
-            end);
-            G2L["2b"].MouseButton1Click:Connect(configu.GetKey);
-            G2L["12"].MouseButton1Click:Connect(function()
-                G2L["1"]:Destroy(true);
-                G2L = nil;
-            end);
-    
-            function modules:fadeAndTween(G2L, e)
-                local tweenInfo = TwInfo(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-                
-                for key, instance in pir(G2L) do
-                    tspawn(function()
-                        if IsA(instance, "TextLabel") and instance.Text ~= "Authentication" then
-                            local tween = TweenService:Create(instance, tweenInfo, {TextTransparency = 1})
-                            instance.AutomaticSize = Enum.AutomaticSize.None;
-                            tween:Play()
-                            tween.Completed:Connect(function()
-                                instance.Visible = false;
-                            end);
-                        elseif IsA(instance, "Frame") then
-                            local size = instance.Size;
-                            local tween = TweenService:Create(instance, tweenInfo, {Size = UDim2.new(size.X.Scale, size.X.Offset, 0, 0)})
-                            instance.AutomaticSize = Enum.AutomaticSize.None;
-                            tween:Play();
-                            tween.Completed:Connect(function()
-                                Destroy(instance);
-                            end);
-                        end;
-                    end);
-                end;
-    
-                local DevMSG = {
-                    {Text = "Vulnerability X", Duration = 0.5},
-                    {Text = "Script verified by VULX AI", Duration = 0.5},
-                    {Text = "Script verfied by TTJY's Bot", Duration = 0.5},
-                    {Text = "Script made by TTJY", Duration = 0.5},
-                    {Text = "Script made by Sevensenz7", Duration = 0.5},
-                    {Text = "Script made by x.nep", Duration = 0.5},
-                    {Text = "Thank you!", Duration = 0.5}
-                }
-    
-                local function tweenText()
-                    local textLabel = e;
-                    local tweenInfoFadeOut = TwInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
-                    local tweenInfoFadeIn = TwInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In);
-    
-                    for _, msg in ipir(DevMSG) do
-                        local tweenOut = TweenService:Create(textLabel, tweenInfoFadeOut, {TextTransparency = 1});
-                        tweenOut:Play();
-                        tweenOut.Completed:Wait();
-    
-                        textLabel.Text = msg.Text;
-                        local tweenIn = TweenService:Create(textLabel, tweenInfoFadeIn, {TextTransparency = 0});
-                        tweenIn:Play();
-                        twait(msg.Duration + 0.4);
-                    end;
-                end;
-    
-                tweenText();
-            end
-        
-            return G2L, tbl;
-        end;    
-        return modules;
-    end;
-end;
-AssetStorage.P30Dol = function()
-    if Prv_url then return; end; GG.Prv_url = "https://v0-admin-dashboard-delta-topaz.vercel.app";
-end;
-AssetStorage.AI = function()
-    if AI_Url then return; end;
-    GG.AI_Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-    GG.BaseInfo = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/A.txt");
-    GG.AI_Body = {
-        contents = {
-            {
-                parts = {
-                    {
-                        text = "Hi";
-                    };
-                };
-            };
-        };
-    };
-    GG.AI_Request = function( Hasahc : base1Vulx ): response
-        local success, response = pcal(function()
-            return request({
-                Url = AI_Url .. Hasahc,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = EnCodeJ(HttpService, AI_Body)
-            });
-        end);
-        if success and response.Success then
-            return DeCodeJ(HttpService, response.Body).candidates[1].content.parts[1].text;
-        end;
-        return "Failed to connect to server.";
-    end;
-end;
-AssetStorage.Error405 = function()
-    if GG.Error405 then return; end;
-    local lastSent = 0;
-    GG.Error405 = {};
-    function Error405:safeToString(v)
-        local ok, s = pcal(function() return tos(v); end);
-        return ok and s or "";
-    end;
-    function Error405:truncate(s, n)
-        return (#s <= n) and s or (strsub(s, 1, n - 3) .. "...");
-    end;
-    function Error405:flattenTable(tbl)
-        local out = {};
-        local function recurse(t, prefix)
-            prefix = prefix and (prefix ~= "" and prefix .. "." or "") or "";
-            for k, v in pir(t) do
-                local key = Error405:safeToString(k);
-                if type(v) == "table" then
-                    recurse(v, prefix .. key);
-                else
-                    out[#out + 1] = prefix .. key .. " : " .. Error405:safeToString(v);
-                end;
-            end;
-        end;
-        recurse(tbl or {}, "");
-        return out;
-    end;
-    function Error405:configsToEmbeds(configTbl)
-        local lines = Error405:flattenTable(configTbl or Configs or {});
-        local embeds, currentLines, currentLen = {}, {}, 0;
-    
-        for i = 1, #lines do
-            local line = lines[i] .. "\n";
-            if currentLen + #line > 4000 and #currentLines > 0 then
-                embeds[#embeds + 1] = {
-                    title = "Configs",
-                    description = Error405:truncate(tconcat(currentLines), 4096),
-                    color = 4325120
-                };
-                currentLines, currentLen = {}, 0;
-            end;
-            currentLines[#currentLines + 1] = line;
-            currentLen = currentLen + #line;
-        end;
-    
-        if #currentLines > 0 then
-            embeds[#embeds + 1] = {
-                title = "Configs",
-                description = truncate(tconcat(currentLines), 4096),
-                color = 4325120
-            };
-        end;
-    
-        if #embeds > (10 - 1) then
-            local keep = 10 - 2;
-            local merged = {};
-            for i = keep + 1, #embeds do
-                merged[#merged + 1] = embeds[i].description;
-            end;
-            local newEmbeds = {};
-            for i = 1, keep do newEmbeds[#newEmbeds + 1] = embeds[i]; end;
-            newEmbeds[#newEmbeds + 1] = {
-                title = "Configs (continued)",
-                description = Error405:truncate(tconcat(merged, "\n"), 4096),
-                color = 4325120
-            };
-            embeds = newEmbeds;
-        end;
-    end;
-    function Error405:sanitizeEmbed(e)
-        return {
-            title = Error405:truncate(Error405:safeToString(e.title), 256),
-            description = Error405:truncate(Error405:safeToString(e.description), 4096),
-            color = mfloor(ton(e.color) or 0)
-        };
-    end;
-    function Error405:sendRequest(bodyStr)
-        if not ErrorURL then return; end;
-        return pcal(function()
-            return request({
-                Url = ErrorURL,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = bodyStr
-            });
-        end);
-    end;
-    function Error405:sendWebhook(errorMsg, stackTrace, scriptObj)
-        local now = os.time();
-        if now - lastSent < 1 then return false; end;
-        lastSent = now;
-    
-        local scriptName = "UnknownScript";
-        if scriptObj then
-            pcal(function()
-                scriptName = scriptObj.GetFullName and scriptObj:GetFullName() or tos(scriptObj);
-            end);
-        end;
-    
-        local content = Error405:truncate(("**Error Detected**\n```time : %s\nuser : %s\n```"):format(getReadableTime(), "Anonymous"), 2000);
-    
-        local embeds = Error405:configsToEmbeds(Configs);
-        embeds[#embeds + 1] = sanitizeEmbed({
-            title = "Error",
-            description = ("Script: %s\n\nMessage:\n%s\n\nStacktrace:\n%s"):format(Error405:safeToString(scriptName), Error405:safeToString(errorMsg), Error405:safeToString(stackTrace or "")),
-            color = 16711680
-        });
-    
-        while #embeds > 10 do
-            table.remove(embeds, 1);
-        end;
-    
-        local payload = {
-            content = content,
-            embeds = embeds
-        };
-    
-        return sendRequest(EnCodeJ(HttpService, payload));
-    end
-end;
-
-GG.CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0};
-if GG.ScriptCache.userIdentify.device == "Mobile" then
-    pcal(function() GG.controlModule = require(PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule")); end);
-end;
-
-GG.error_handler = function(...)
-    return warn("[Flow] : Error : " .. ...);
-end;
-GG.dist = function( position : Vector3 )
-    return selff:DistanceFromCharacter(position);
-end;
-
-GG.tableToString = function(tbl, name)
-    name = name or "tbl";
-    local function serialize(t, indent)
-        indent = indent or 0;
-        local str = "{ ";
-        for k, v in ipir(t) do
-            local key = nil;
-            if type(k) == "string" then
-                key = strformat("[%q]", k);
-            else
-                key = "[" .. tos(k) .. "]";
-            end;
-
-            local value;
-            if type(v) == "table" then
-                value = serialize(v, indent + 2);
-            elseif type(v) == "string" then
-                value = strformat("%q", v);
-            else
-                value = tos(v);
-            end;
-            str = str .. key .. " = " .. value .. ", ";
-        end;
-        str = str .. "}";
-        return str;
-    end;
-
-    return name .. " = " .. serialize(tbl) .. ";";
-end;
-GG.configsToString = function()
-    local function serialize(tbl, indent)
-        indent = indent or ""
-        local result = "{\n"
-        for k,v in pir(tbl) do
-            local key = (typeof(k) == "string") and strformat("[%q]", k) or "["..tos(k).."]";
-            if typeof(v) == "table" then
-                result ..= indent.."    "..key.." = "..serialize(v, indent.."    ")..";\n";
-            elseif typeof(v) == "string" then
-                result ..= indent.."    "..key.." = "..strformat("%q", v)..";\n";
-            else
-                result ..= indent.."    "..key.." = "..tos(v)..";\n";
-            end;
-        end;
-        result ..= indent.."}";
-        return result;
-    end;
-    
-    local exported = "getgenv().Configs = " .. serialize(Configs);
-    return exported;
-end;
-
-ScriptCache.createParagraph_Wel = ScriptCache.createParagraph_Wel or function(tab, title, desc, image, imageSize, color)
-    return tab:Paragraph({
-        Title = title,
-        Desc = desc,
-        Image = image,
-        ImageSize = imageSize,
-        Color = color or nil,
-    });
-end;
-ScriptCache.createSection_Wel = ScriptCache.createSection_Wel or function(tab, title)
-    return tab:Section({ Title = title, TextXAlignment = "Center" });
-end;
-
-ScriptCache.fetchDiscordInfo_Wel = ScriptCache.fetchDiscordInfo_Wel or function(url, wind)
-    local res = nil;
-    pcal(function()
-        res = DeCodeJ(HttpService, request({
-            Url = url,
-            Method = "GET",
-            Headers = { ["Accept"] = "application/json" }
-        }).Body);
-    end);
-    return res or {};
-end;
-
-GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI): any
-    ScriptCache.InviteCode = ScriptCache.InviteCode or "c8cUR6Unay";
-    local DiscordAPI = "https://discord.com/api/v10/invites/" .. ScriptCache.InviteCode .. "?with_counts=true&with_expiration=true";
-    
-    local Response = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
-
-    if Response and Response.guild then
-        local desc = 
-            ' <font color="#52525b">•</font> Member Count : ' .. tos(Response.approximate_member_count) ..
-            '\n <font color="#16a34a">•</font> Online Count : ' .. tos(Response.approximate_presence_count);
-
-        local img = "https://cdn.discordapp.com/icons/" .. Response.guild.id .. "/" .. Response.guild.icon .. ".png?size=1024";
-        local DiscordInfo = ScriptCache.createParagraph_Wel(tab, Response.guild.name, desc, img, 42);
-
-        tab:Button({
-            Title = "Update Info",
-            Callback = function()
-                local u = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
-                if u and u.guild then
-                    DiscordInfo:SetDesc(
-                        ' <font color="#52525b">•</font> Member Count : ' .. tos(u.approximate_member_count) ..
-                        '\n <font color="#16a34a">•</font> Online Count : ' .. tos(u.approximate_presence_count)
-                    );
-                end;
-            end;
-        });
-    else
-        ScriptCache.createParagraph_Wel(tab, "Error when receiving information about the Discord server", EnCodeJ(HttpService, Response), "triangle-alert", 26, "Red");
-    end;
-
-    ScriptCache.createSection_Wel(tab, "✨ Script Infos ✨");
-
-    ScriptCache.createParagraph_Wel(tab, "Forsaken",
-        "VULX has the best <b>Forsaken</b> script, featuring invisibility, cool emotes, ESP, and other tools to enhance your gameplay.\n<font color=\"#FF0000\">Reach is still in development; to enable it, you must use <b>Config ONLY</b>.</font>",
-        "sword");
-    ScriptCache.createParagraph_Wel(tab, "Tower Defense Simulator",
-        "VULX is the only script available for <b>Tower Defense Simulator</b>. Our features are great, but we highly recommend trying it on an <b>alt account</b> or recording a macro on an alt due to the strong anti-cheat system.\n<font color=\"#FF0000\">More updates are coming soon. For now, we only have the macro feature because TTJY has been busy.</font>",
-        "shield");
-    ScriptCache.createParagraph_Wel(tab, "All Star X",
-        "VULX offers an <b>All Star X</b> script that includes an excellent macro, AFK farming, and more.\nThe game has no anti-cheat, so you don’t need to worry.",
-        "shield");
-
-    ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
-
-    ScriptCache.createParagraph_Wel(tab, "TTJY",
-        "TTJY is a Luau developer who also created the official VULX site. With 5 years of scripting experience (TTJY Hub – NeuronX – Flow - VULX), TTJY manages all VULX APIs. If you need to report a bug, you can report it directly to TTJY.",
-        "user");
-
-    ScriptCache.createParagraph_Wel(tab, "Ironic",
-        "Ironic is the founder of VULX. He usually manages VULX products like cheap Robux, accounts for sale, and oversees the community.",
-        "user");
-
-    ScriptCache.createParagraph_Wel(tab, "x.nep",
-        "x.nep is also a Luau developer who helps with VULX in coding.",
-        "user");
-
-    ScriptCache.createParagraph_Wel(tab, "Contact Us",
-        "Discord : discord.gg/c8cUR6Unay",
-        "contact"
-    );
-
-    ScriptCache.HandleUNC = {
-        Title = "Locked Feature",
-        Desc = "This function is an internal function, Please change your executor in order to use this feature.",
-        Callback = function() end
-    };
-end;
-
-------------- Script Asset / Script Cache 2 -------------
-
-GG.MobList = (PlaceId == 2753915549 and {
-    "Bandit",
-    "Monkey",
-    "Gorilla",
-    "Pirate",
-    "Brute",
-    "Desert Bandit",
-    "Desert Officer",
-    "Snow Bandit",
-    "Snowman",
-    "Chief Petty Officer",
-    "Sky Bandit",
-    "Dark Master",
-    "Toga Warrior",
-    "Gladiator",
-    "Military Soldier",
-    "Military Spy",
-    "Fishman Warrior",
-    "Fishman Commando",
-    "God's Guard",
-    "Shanda",
-    "Royal Squad",
-    "Royal Soldier",
-    "Galley Pirate",
-    "Galley Captain"
-}) or (PlaceId == 4442272183 and {
-    "Raider",
-    "Mercenary",
-    "Swan Pirate",
-    "Factory Staff",
-    "Marine Lieutenant",
-    "Marine Captain",
-    "Zombie",
-    "Vampire",
-    "Snow Trooper",
-    "Winter Warrior",
-    "Lab Subordinate",
-    "Horned Warrior",
-    "Magma Ninja",
-    "Lava Pirate",
-    "Ship Deckhand",
-    "Ship Engineer",
-    "Ship Steward",
-    "Ship Officer",
-    "Arctic Warrior",
-    "Snow Lurker",
-    "Sea Soldier",
-    "Water Fighter"
-}) or (PlaceId == 7449423635 and {
-    "Pirate Millionaire",
-    "Dragon Crew Warrior",
-    "Dragon Crew Archer",
-    "Hydra Enforcer",
-    "Venomous Assailant",
-    "Marine Commodore",
-    "Marine Rear Admiral",
-    "Fishman Raider",
-    "Fishman Captain",
-    "Forest Pirate",
-    "Mythological Pirate",
-    "Jungle Pirate",
-    "Musketeer Pirate",
-    "Reborn Skeleton",
-    "Living Zombie",
-    "Demonic Soul",
-    "Posessed Mummy",
-    "Peanut Scout",
-    "Peanut President",
-    "Ice Cream Chef",
-    "Ice Cream Commander",
-    "Cookie Crafter",
-    "Cake Guard",
-    "Baking Staff",
-    "Head Baker",
-    "Cocoa Warrior",
-    "Chocolate Bar Battler",
-    "Sweet Thief",
-    "Candy Rebel",
-    "Candy Pirate",
-    "Snow Demon",
-    "Isle Outlaw",
-    "Island Boy",
-    "Sun-kissed Warrior",
-    "Isle Champion"
-}) or {};
-GG.BossList = (PlaceId == 2753915549 and {
-    "The Gorilla King",
-    "Bobby",
-    "Yeti",
-    "Mob Leader",
-    "Vice Admiral",
-    "Warden",
-    "Chief Warden",
-    "Swan",
-    "Magma Admiral",
-    "Fishman Lord",
-    "Wysper",
-    "Thunder God",
-    "Cyborg",
-    "Saber Expert"
-}) or (PlaceId == 4442272183 and {
-    "Diamond",
-    "Jeremy",
-    "Fajita",
-    "Don Swan",
-    "Smoke Admiral",
-    "Cursed Captain",
-    "Darkbeard",
-    "Order",
-    "Awakened Ice Admiral",
-    "Tide Keeper"
-}) or (PlaceId == 7449423635 and {
-    "Stone",
-    "Hydra Leader",
-    "Kilo Admiral",
-    "Captain Elephant",
-    "Beautiful Pirate",
-    "rip_indra True Form",
-    "Longma",
-    "Soul Reaper",
-    "Cake Queen"
-}) or {};
-
-------------- FileService -------------
-
-AssetStorage.Files = function()
-    GG.FileSys = GG.FileSys or {};
-    GG.FileSysOrigin = "FlowXS/";
-
-    function FileSys:Continue( a : fileName , b : string): nil
-        if appendfile and isfile then
-            return (isfile(a) and appendfile(a,b));
-        end;
-        return warn("[Flow] : Error : appendfile or isfile is not a valid function.");
-    end;
-    function FileSys:ListFrom( a : folderName , is_fullname : boolean , filesynx : string )
-        if listfiles and isfolder then
-            local ok, files = pcal(listfiles, FileSysOrigin .. a);
-            if not ok then return {}; end;
-            local list = {};
-            for _, f in ipir(files) do
-                local corrected_name = f;
-                if is_fullname then
-                    if not strfind(corrected_name, "FlowXS") then
-                        corrected_name = FileSysOrigin .. a .. "/" .. corrected_name;
-                    end;
-                else
-                    corrected_name = f:match("([^/\\]+)%.macro$");
-                end;
-                if filesynx then
-                    corrected_name = corrected_name .. filesynx;
-                end;
-                tablein(list, corrected_name);
-            end;
-            return list;
-        end;
-        warn("[Flow] : Error : listfiles or isfolder is not a valid function.");
-        return {}; 
-    end;
-    function FileSys:WriteFrom( a : folderName , b : fileName , c : string ): nil
-        if isfolder and writefile then
-            local datas = c;
-            if type(datas) == 'table' then
-                datas = EnCodeJ(HttpService, datas);
-            end;
-            if not isfolder(FileSysOrigin .. a) then
-                makefolder(FileSysOrigin .. a);
-            end;
-            return writefile(FileSysOrigin .. a .. "/" .. b, datas);
-        end;
-        return warn("[Flow] : Error : isfolder or writefile is not a valid function.");
-    end;
-    function FileSys:ConvertTo( data : any , format : string ): any
-        if format == "Lua" then
-            if type(data) == 'string' then
-                return "return function() " .. data .. "end";
-            end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
-        elseif format == "LuaJA" then
-            if type(data) == 'table' then
-                local str = "{"
-                local first = true
-            
-                for k, v in pir(data) do
-                    if not first then
-                        str = str .. ",\n";
-                    end;
-                    first = false;
-            
-                    local keyStr = "[\"" .. tos(k) .. "\"]";
-                    local valStr = "\"" .. tos(v) .. "\"";
-                    str = str .. keyStr .. " = " .. valStr;
-                end;
-            
-                str = str .. "}";
-                return "return " .. str;
-            end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
-        elseif format == "JSON" then
-            if type(data) == 'table' then
-                -- Format to string;
-            end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be table.");
-        elseif format == "Encrypt" then
-            return warn("[Flow] : ConvertTo : Log : You are currently using demo filesystem.");
-        end;
-    end;
-    function FileSys:RepairTbl(tbl: table): table
-        if type(tbl) ~= "table" then
-            return "nilByTTJY";
-        end;
-    
-        local function safeRead(innerTbl, visited)
-            if visited[innerTbl] then
-                return "[Circular Reference]";
-            end;
-            visited[innerTbl] = true;
-    
-            local newTbl = {};
-            for k, v in pairs(innerTbl) do
-                local typeofv = typeof(v);
-                if typeofv == 'Instance' then
-                    local desc = "Object is an Instance";
-                    if v.Parent then
-                        desc = desc .. " | Path is [ " .. v:GetFullName() .. " ]";
-                    else
-                        desc = desc .. " | Path is [ nil." .. tostring(v) .. " ]";
-                    end;
-                    newTbl[k] = desc;
-                elseif typeofv == 'table' then
-                    newTbl[k] = safeRead(v, visited);
-                elseif typeofv == 'CFrame' then
-                    newTbl[k] = "Object was CFrame. [ CF(" .. tconcat({v:GetComponents()}, ", ") .. ") ]";
-                elseif typeofv == 'Vector2' then
-                    newTbl[k] = "Object was Vector2. [ Vec2(" .. tconcat({v.X, v.Y}, ", ") .. ") ]";
-                elseif typeofv == 'Vector3' then
-                    newTbl[k] = "Object was Vector3. [ Vec3(" .. tconcat({v.X, v.Y, v.Z}, ", ") .. ") ]";
-                else
-                    newTbl[k] = v;
-                end;
-            end;
-            return newTbl;
-        end;
-    
-        return safeRead(tbl, {});
-    end;
-end;
-
-------------- QueueService -------------
-
-AssetStorage.QueueService = function()
-    ScriptCache.OnTeleportCC = nil;
-    ScriptCache.f_I_table = {};
-    ScriptCache.f_n_table = {};
-    GG.Q_UploadFkey = function( key : any , f )
-        ScriptCache.f_I_table[key] = f;
-    end;
-    GG.Q_UploadFNokey = function( key : any , f )
-        tablein(ScriptCache.f_n_table, f);
-    end;
-    GG.Remove_Q_FKey = function( key : any , f )
-        ScriptCache.f_I_table[key] = nil;
-    end;
-    GG.Remove_Q_FNoKey = function( key : any , f )
-        for _,v in pir(ScriptCache.f_n_table) do
-            table.remove(ScriptCache.f_n_table, _);
-        end;
-    end;
-    GG.Q_Connect = function( States , is_Secure , queue_str )
-        if ScriptCache.OnTeleportCC then
-            ScriptCache.OnTeleportCC:Disconnect();
-            ScriptCache.OnTeleportCC = nil;
-        end;
-        ScriptCache.OnTeleportCC = selff.OnTeleport:Connect(function(State)
-            if GG.ONTCC and tablef(States, State) then -- Enum.TeleportState.Started, RequestedFromServer
-                table.foreach(ScriptCache.f_I_table, function(i, v)
-                    return is_Secure and pcal(v) or v();
-                end);
-                table.foreach(ScriptCache.f_n_table, function(i, v)
-                    return is_Secure and pcal(v) or v();
-                end);
-                if queue_str then
-                    return queueOT(queue_str);
-                end;
-            end;
-        end);
-    end;
-    GG.Q_Disonnect = function()
-        if ScriptCache.OnTeleportCC then
-            ScriptCache.OnTeleportCC:Disconnect();
-            ScriptCache.OnTeleportCC = nil;
-        end;
-    end;
-    GG.Q_Connect_Get = function( States , is_Secure, Method , func )
-        if ScriptCache.OnTeleportCC2 then
-            ScriptCache.OnTeleportCC2:Disconnect();
-            ScriptCache.OnTeleportCC2 = nil;
-        end;
-        ScriptCache.OnTeleportCC2 = selff.OnTeleport:Connect(function(State)
-            if GG.ONTCC2 and tablef(States, State) then
-                table.foreach(ScriptCache.f_I_table, function(i, v)
-                    return is_Secure and pcal(v) or v();
-                end);
-                table.foreach(ScriptCache.f_n_table, function(i, v)
-                    return is_Secure and pcal(v) or v();
-                end);
-                local queue_str = func and func();
-                if queue_str then
-                    return queueOT(queue_str);
-                end;
-            end;
-        end);
-    end;
-    GG.Q_Disonnect2 = function()
-        if ScriptCache.OnTeleportCC2 then
-            ScriptCache.OnTeleportCC2:Disconnect();
-            ScriptCache.OnTeleportCC2 = nil;
-        end;
-    end;
-end;
-
-------------- SensitiveService -------------
-
-AssetStorage.SensitiveService = function()
-    local RawC = {};
-    GG.SLow_ForceSelfThisFunction = function( key )
-        local Attempt_To_Index_Function = clonefunction(GG[key])
-        GG[key] = function(...)
-            Attempt_To_Index_Function(...)
-            return Attempt_To_Index_Function;
-        end;
-        tablein(RawC, GG[key]);
-    end;
-    GG.SLow_SelfThisFunction = function( key )
-        local Attempt_To_Index_Function = clonefunction(GG[key])
-        GG[key] = function(...)
-            local Return = Attempt_To_Index_Function(...);
-            if Return then
-                return Return;
-            end;
-            return Attempt_To_Index_Function;
-        end;
-        tablein(RawC, GG[key]);
-    end;
-    GG.Lower_ForceSelfThisFunction = function( key )
-        local Attempt_To_Hooked = nil;
-        if GG[key] then
-            Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
-                Attempt_To_Hooked(...);
-                return GG[key];
-            end));
-        end;
-        tablein(RawC, GG[key]);
-    end;
-    GG.Lower_SelfThisFunction = function( key )
-        local Attempt_To_Hooked = nil;
-        if GG[key] then
-            Attempt_To_Hooked = LowerC(GG[key], newcclosure(function(...)
-                local Return = Attempt_To_Hooked(...);
-                if Return then
-                    return Return;
-                end;
-                return GG[key];
-            end));
-        end;
-        tablein(RawC, GG[key]);
-    end;
-    GG.Restore_SensitiveService = function( offset )
-        return table.foreach(RawC, function(_, v)
-            if v == offset then
-                pcal(function()
-                    ResetC(offset);
-                    table.remove(RawC, _);
-                end);
-            end;
-        end);
-    end;
-end;
-
-------------- WindUI -------------
-
 GG.LoadUILib = function(...)
     local a;
     a = {
