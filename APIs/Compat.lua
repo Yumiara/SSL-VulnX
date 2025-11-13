@@ -21807,4 +21807,6 @@ GG.API_Only = false;
 
 if GG.TestMode == "F+P" then
     return loadScriptFromCache("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/Compat/Free%2BPV_Support.lua", "F+P", false, 600, false);
+elseif GG.TestMode == "P" then
+    return loadScriptFromCache("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/Compat/PV.lua", "POnly", false, 600, false);
 end;
