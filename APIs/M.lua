@@ -26,7 +26,7 @@ elseif LSecureLoad and LSecureUI and Functions then
     return LSecureLoad();
 end;
 
-if ReplicatedFirst_lc and API_Only then return warn("[Flow] : Loaded Main.lua via execution"); end;
+if ReplicatedFirst_lc and API_Only then return warn("[VULNX] : Loaded Main.lua via execution"); end;
 
 ------------- Super Global ----------
 
@@ -359,6 +359,7 @@ ScriptCache.userIdentify = {
 
     unc_infos = false;
 };
+ScriptCache.AutoConfigPathCache = {};
 
 GG.include = function(globalOrName:string, as:string)
     if not AssetStorage then return; end; local fn:(any)->(any)=nil;
@@ -406,6 +407,9 @@ for i=1, 3 do
             HttpGet = game.HttpGet;
             EnCodeJ = HttpService.JSONEncode;
             DeCodeJ = HttpService.JSONDecode;
+            GenerateGUID = HttpService.GenerateGUID;
+
+            GetClientId = RbxAnalyticsService.GetClientId;
 
             GetPivot = W.GetPivot;
             PivotTo = W.PivotTo;
@@ -413,6 +417,9 @@ for i=1, 3 do
             IsA = game.IsA;
             Clone = game.Clone;
             GetFullName = game.GetFullName;
+            PropChangeSignal = game.GetPropertyChangedSignal;
+
+            GetNetworkPing = P.LocalPlayer.GetNetworkPing;
             GetPlayers = P.GetPlayers;
 
             TwCreate = TweenService.Create;
@@ -624,19 +631,105 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
         if not HumRSelf then return; end;
         HumRSelf.Anchored = bool;
     end;
+    function CommonF:MakeFloatPart()
+        local selcRootX = FindFirstChild(W, "selcRootX");
+        if not selcRootX then
+            UFPart = Instancen("Part");
+            UFPart.Size = Vec3(2, 0.2, 1.5);
+            UFPart.Material = Enum.Material.Grass;
+            UFPart.Anchored = true;
+            UFPart.Transparency = 1;
+            UFPart.Parent = W;
+            UFPart.Name = "selcRootX";
+        else
+            UFPart = selcRootX;
+        end;
+        return UFPart;
+    end;
     function CommonF:UpdateClientState(which:string): any
-        if which == "Noclip" then
+        if which == "Float" then
+            local FloatYeilding_Var = CF(0, -10000, 0);
+            local FloatYeilding_Var_Use = CF(0, -3.1, 0);
+            return function( ForceFloat : boolean, HumRSelf : HumanoidRootPart , configValue : boolean ): any
+                if not HumRSelf then return; end;
+                if not UFPart then return self:MakeFloatPart();
+                else if configValue or ForceFloat then
+                        if not ForceFloat then
+                            UFPart.CFrame = FloatYeilding_Var;
+                        elseif ForceFloat == "None" then
+                            if configValue then
+                                UFPart.CFrame = HumRSelf.CFrame * FloatYeilding_Var_Use;
+                            else
+                                UFPart.CFrame = HumRSelf.CFrame * FloatYeilding_Var;
+                            end;
+                        elseif ForceFloat == true then
+                            UFPart.CFrame = HumRSelf.CFrame * FloatYeilding_Var_Use;
+                        end;
+                    else
+                        UFPart.CFrame = FloatYeilding_Var;
+                    end; return;
+                end;
+            end;
+        elseif which == "Noclip" then
             return function( enable : boolean ): nil
-                if not enable or not selc or not selc.Parent then return; end;
-                for _, child in pir(GetDescendants(selc)) do
-                    if IsA(child, "BasePart") and child.Name ~= "bobber" then
-                        child.CanCollide = false;
+                if enable then
+                    for _, child in pir(selc and GetDescendants(selc) or {}) do
+                        if IsA(child, "BasePart") and child.Name ~= "bobber" then
+                            child.CanCollide = false;
+                        end;
+                    end; return;
+                end; return;
+            end;
+        end;
+
+        if which == "WalkSpeed" then
+            return function( speed : number , enable : bool ): nil
+                if not enable or not selc or not FindFirstChildOfClass(selc, "Humanoid") then return; end;
+                selc.Humanoid.WalkSpeed = speed;
+            end;
+        elseif which == "JumpPower" then
+            return function( power : number , enable : bool ): nil
+                if not enable or not selc or not FindFirstChildOfClass(selc, "Humanoid") then return; end;
+                selc.Humanoid.JumpPower = power;
+                selc.Humanoid.UseJumpPower = true;
+            end;
+        end;
+        if which == "WalkSpeedC" then
+            return function( speed : number , enable : bool ): nil
+                if enable then
+                    if not GG.WalkSpeedConnector then
+                        GG.SecureSelcSaved = FindFirstChild(selc, "Humanoid");
+
+                        if GG.SecureSelcSaved and GG.SecureSelcSaved.Parent then
+                        
+                            GG.WalkSpeedConnector = GG.SecureSelcSaved:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                                GG.SecureSelcSaved.WalkSpeed = Configs["Player"]["Client"]["WalkSpeed"];
+                            end);
+
+                            GG.SecureSelcSaved.WalkSpeed = speed;
+
+                        end;
+                    else
+                        if GG.SecureSelcSaved and GG.SecureSelcSaved.Parent then
+                            GG.SecureSelcSaved.WalkSpeed = speed;
+                        end;
+                        if GG.SecureSelcSaved ~= FindFirstChild(selc, "Humanoid") then
+                            if GG.WalkSpeedConnector then
+                                GG.WalkSpeedConnector:Disconnect();
+                                GG.WalkSpeedConnector = false;
+                            end;
+                        end;
+                    end;
+                else
+                    if GG.WalkSpeedConnector then
+                        GG.WalkSpeedConnector:Disconnect();
+                        GG.WalkSpeedConnector = false;
+                        GG.SecureSelcSaved.WalkSpeed = 16;
                     end;
                 end;
             end;
         end;
     end;
-
     return CommonF;
 end;
 AssetStorage.GraphicsPlay = function(...): {[string]:(any)->(...any)}
@@ -756,6 +849,78 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
             return SystemStackDestroy;
         end);
     end;
+    function Windy:GetConfigFromPath( pt:string, rp:string ): string
+        pt = rp .. "/" .. pt;
+        if ScriptCache.AutoConfigPathCache[pt] then
+            return ScriptCache.AutoConfigPathCache[pt];
+        end;
+        local Splited = strsplit(pt,"/");
+        local FullPath = Configs;
+        for i,v in pir(Splited) do
+            FullPath = FullPath[v];
+            if FullPath == nil then
+                return nil;
+            end;
+        end;
+        ScriptCache.AutoConfigPathCache[pt]=FullPath;
+        return FullPath;
+    end;
+    function Windy:UIFromData( tab, data, path ): nil
+        for i,v in ipir(data) do
+            if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then
+                self:GetConfigFromPath(v.Path, path);
+            end;
+            v.Callback = v.Callback or function(state)
+                local fullPath = path.."/"..v.Path;
+                ScriptCache.AutoConfigPathCache[fullPath] = state;
+                local Splited = strsplit(fullPath,"/");
+                local t = Configs;
+                for i = 1, #Splited - 1 do
+                    t = t[ Splited[i] ];
+                end;
+                t[ Splited[#Splited] ] = state;
+            end;
+            if v.__type == "Button" then
+                tab:Button(v);
+            elseif v.__type == "Toggle" then
+                Functions:AutoSetupToggle(tab, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
+            elseif v.__type == "Slider" then
+                v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
+                tab:Slider(v);
+            elseif v.__type == "Dropdown" then
+                v.Value = (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value;
+                v.AllowNone = v.AllowNone or false;
+                if v.RECall then
+                    local drp = tab:Dropdown(v);
+                    v.RECall.Callback = function()
+                        return drp:Refresh(v.RECall.RECall());
+                    end;
+                    tab:Button(v.RECall);
+                    continue;
+                end;
+                tab:Dropdown(v);
+            elseif v.__type == "Keybind" then
+                self:AutoSetupKeybind(tab, v, ScriptCache.AutoConfigPathCache[path.."/"..v.Path]);
+            elseif v.__type == "Code" then
+                if v.RECall then
+                    local CodeT = tab:Code(v);
+                    v.RECall.Callback = function(...)
+                        return CodeT:SetCode(v.RECall.RECallback() or "");
+                    end
+                    tab:Button(v.RECall);
+                    continue;
+                end;
+                tab:Code(v);
+            elseif v.__type == "Input" then
+                tab:Input(v);
+            elseif v.__type == "Divider" then
+                tab:Divider();
+            elseif v.__type == "Section" then
+                tab:Section(v);
+            end;
+        end;
+    end;
+    return Windy;
 end;
 AssetStorage.Key = function(): nil
     GG.UploadToGlobal_Key = GG.UploadToGlobal_Key or function( arg : {} )
@@ -2365,7 +2530,7 @@ if GG.ScriptCache.userIdentify.device == "Mobile" then
 end;
 
 GG.error_handler = function(...)
-    return warn("[Flow] : Error : " .. ...);
+    return warn("[VULNX] : Error : " .. ...);
 end;
 GG.dist = function( position : Vector3 )
     return selff:DistanceFromCharacter(position);
@@ -21666,7 +21831,7 @@ elseif FreeCLoad[GameId] then
 		return loadScriptFromCache(srcName, GetLuaID, false, 600, false)();
     else
         srcName = "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/K.oluac";
-		return loadScriptFromCache(srcName, "K.oluac", false, 600, false);
+		return loadScriptFromCache(srcName, "K.oluac", false, 600, false)();
     end;
 elseif FreeLoad[GameId] then
     GG.GetLuaID = FreeLoad[GameId];
