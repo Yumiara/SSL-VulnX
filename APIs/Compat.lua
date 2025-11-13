@@ -501,7 +501,7 @@ GG.loadsource = function(source:string):any
         if suc then
             return res;
         else
-            warn(strformat(ScriptCache.CommonString.loscr, attempt, result)); twait();
+            warn(strformat("[VULNX] : Attempt %d : %s", attempt, res)); twait();
         end;
     end;
 end;
