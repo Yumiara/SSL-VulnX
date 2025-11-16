@@ -20,10 +20,10 @@ elseif loaded2 then
     });
 end;
 
-if InKey then
-    return InKey();
-elseif LSecureLoad and LSecureUI and Functions then 
+if LSecureLoad and LSecureUI and Functions then 
     return LSecureLoad();
+elseif InKey then
+    return InKey();
 end;
 
 if ReplicatedFirst_lc and API_Only then return warn("[VULNX] : Loaded Main.lua via execution"); end;
@@ -250,6 +250,7 @@ if not ReplicatedFirst_lc then
         Vec2 = Vector2.new;
         CF = CFrame.new;
         CFAg = CFrame.Angles;
+        CFLook = CFrame.lookAt;
 
         pir = pairs;
         ipir = ipairs;
@@ -501,7 +502,7 @@ GG.loadsource = function(source:string):any
         if suc then
             return res;
         else
-            warn(strformat(ScriptCache.CommonString.loscr, attempt, result)); twait();
+            warn(strformat("[VULNX] : Attempt %d : %s", attempt, res)); twait();
         end;
     end;
 end;
@@ -826,7 +827,7 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
         return ScriptCache.NewToggle;
     end;
     function Windy:AutoSetupKeybind(a:tab,b:{any},c:any): {[string]:any}
-        b.Value = c.Key.Name;
+        b.Value = c.Name;
         ScriptCache.NewKeybind = a:Keybind(b);
         return ScriptCache.NewKeybind;
     end;
@@ -865,8 +866,24 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
         ScriptCache.AutoConfigPathCache[pt]=FullPath;
         return FullPath;
     end;
-    function Windy:UIFromData( tab, data, path ): nil
+    function Windy:VisibilityModuleSet(ui:{[string]:any}): nil
+        local main:Frame=nil;
+        if ui.ToggleFrame then main = ui.ToggleFrame.UIElements.Main;
+        elseif ui.DropdownFrame then main = ui.DropdownFrame.UIElements.Main;
+        elseif ui.SliderFrame then main = ui.SliderFrame.UIElements.Main;
+        elseif ui.ButtonFrame then main = ui.ButtonFrame.UIElements.Main;
+        elseif ui.KeybindFrame then main = ui.KeybindFrame.UIElements.Main; end;
+        if main then main.Visible = not main.Visible; end;
+    end;
+    function Windy:UIFromData( tab:Tab, data:{any}, path:string ): nil
         for i,v in ipir(data) do
+            if v.__type == "Module" then
+                if v.__dat then
+                    self:UIFromModule(tab,v.__dat,path,v.Title,v.allign); continue;
+                else
+                    self:UIFromData(tab,v.__data,path); continue;
+                end;
+            end;
             if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then
                 self:GetConfigFromPath(v.Path, path);
             end;
@@ -917,6 +934,114 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 tab:Divider();
             elseif v.__type == "Section" then
                 tab:Section(v);
+            end;
+        end;
+    end;
+    function Windy:UIFromModule(tab:Tab,dat:{[nil]:{[string]:any}},path:string,title:string,allign:TextXAlignment): nil
+        local MagicModuleDrops = {}; MagicModuleDrops[#MagicModuleDrops + 1] = tab:Button({
+            Title = title;
+            Callback = function()
+                for _,v1 in pir(MagicModuleDrops) do
+                    if _ ~= 1 then
+                        if type(v1) ~= 'table' then
+                            v1.Visible = not v1.Visible;
+                        else
+                            self:VisibilityModuleSet(v1);
+                        end;
+                    end;
+                end;
+            end
+        });
+        for i,v in ipir(dat) do
+            if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then self:GetConfigFromPath(v.Path, path); end;
+            v.Callback = v.Callback or function(state)
+                local fullPath = path.."/"..v.Path;
+                ScriptCache.AutoConfigPathCache[fullPath] = state;
+                local Splited = strsplit(fullPath,"/");
+                local t = Configs;
+                for ic = 1, #Splited - 1 do
+                    t = t[ Splited[ic] ];
+                end;
+                t[ Splited[#Splited] ] = state;
+            end;
+            if v.__type == "Button" then
+                local btn = tab:Button(v);
+                btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
+                MagicModuleDrops[#MagicModuleDrops + 1] = btn;
+            elseif v.__type == "Toggle" then
+                local tgg = Functions:AutoSetupToggle(tab, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
+                tgg.ToggleFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                tgg.ToggleFrame.UIElements.Main.ImageTransparency = 0.98;
+                MagicModuleDrops[#MagicModuleDrops + 1] = tgg;
+            elseif v.__type == "Slider" then
+                v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
+                local sld = tab:Slider(v);
+                sld.SliderFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                sld.SliderFrame.UIElements.Main.ImageTransparency = 0.98;
+                MagicModuleDrops[#MagicModuleDrops + 1] = sld;
+            elseif v.__type == "Dropdown" then
+                v.Value = (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value;
+                v.AllowNone = v.AllowNone or false;
+                local drp = nil;
+                if v.RECall then
+                    drp = tab:Dropdown(v);
+                    v.RECall.Callback = function()
+                        return drp:Refresh(v.RECall.RECall());
+                    end;
+                    local btn = tab:Button(v.RECall);
+                    btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                    btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
+                    MagicModuleDrops[#MagicModuleDrops + 1] = btn;
+                end;
+                drp = drp or tab:Dropdown(v);
+                drp.DropdownFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                drp.DropdownFrame.UIElements.Main.ImageTransparency = 0.98;
+                MagicModuleDrops[#MagicModuleDrops + 1] = drp;
+            elseif v.__type == "Keybind" then
+                local keb = self:AutoSetupKeybind(tab, v, ScriptCache.AutoConfigPathCache[path.."/"..v.Path]);
+                keb.KeybindFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                keb.KeybindFrame.UIElements.Main.ImageTransparency = 0.98;
+                MagicModuleDrops[#MagicModuleDrops + 1] = keb;
+            elseif v.__type == "Code" then
+                local CodeT = nil;
+                if v.RECall then
+                    CodeT = tab:Code(v);
+                    v.RECall.Callback = function(...)
+                        return CodeT:SetCode(v.RECall.RECallback() or "");
+                    end
+                    local btn = tab:Button(v.RECall);
+                    btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
+                btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
+                    MagicModuleDrops[#MagicModuleDrops + 1] = btn;
+                end;
+                CodeT = CodeT or tab:Code(v);
+                MagicModuleDrops[#MagicModuleDrops + 1] = CodeT;
+            elseif v.__type == "Input" then
+                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Input(v);
+            elseif v.__type == "Divider" then
+                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Divider();
+                MagicModuleDrops[#MagicModuleDrops].Size = Dim2(0.7,0,0,20);
+            elseif v.__type == "Section" then
+                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Section(v);
+            end;
+        end;
+        for _,v1 in pir(MagicModuleDrops) do
+            if _ ~= 1 then
+                if type(v1) ~= 'table' then
+                    v1.Visible = not v1.Visible;
+                else
+                    self:VisibilityModuleSet(v1);
+                end;
+            else
+                v1.UIElements.ButtonIcon.Visible = false;
+                if allign then
+                    for _,v4 in pir(GetChildren(v1.ButtonFrame.UIElements.Container.Frame.Frame)) do
+                        if IsA(v4, "TextLabel") and v4.Text ~= "" then
+                            v4.TextXAlignment = allign;
+                        end;
+                    end;
+                end;
             end;
         end;
     end;
