@@ -1700,7 +1700,7 @@ AssetStorage.Key = function(): nil
                 G2L["1"]:Destroy();
                 G2L["1"] = nil;
                 G2L = nil;
-                return setc("https://link-target.net/657698/elNaqIvsbfuh");
+                return setc("https://pandadevelopment.net/getkey?service=vulx&hwid="..gethwid());
             end);
         
             return G2L;
