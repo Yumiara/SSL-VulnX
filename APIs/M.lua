@@ -518,15 +518,15 @@ GG.loadScriptFromCache = function(srcName, fileName, noload, custom_time, is_ign
 
         local CD = custom_time or 600;
         local versionFile = "FlowXSVersion.json";
-        local cacheFile = "FlowXS/" .. fileName;
+        local cacheFile = "FlowXS/" .. tos(fileName);
         local no_write = is_ignore;
 
         GG.ALLVersion = ALLVersion or {};
-        ALLVersion[fileName] = ALLVersion[fileName] or tos(tick());
+        ALLVersion[tos(fileName)] = ALLVersion[tos(fileName)] or tos(tick());
 
         local function refresh()
             local source = HttpGet(game, srcName);
-            ALLVersion[fileName] = tos(tick());
+            ALLVersion[tos(fileName)] = tos(tick());
             writefile(cacheFile, source);
             if not no_write then
                 writefile(versionFile, EnCodeJ(HttpService, ALLVersion));
@@ -534,7 +534,7 @@ GG.loadScriptFromCache = function(srcName, fileName, noload, custom_time, is_ign
             return source;
         end;
 
-        if tick() - ton(ALLVersion[fileName]) >= CD then
+        if tick() - ton(ALLVersion[tos(fileName)]) >= CD then
             warn("[VULNX] : Loaded " .. fileName .. " from GitHub via auto-update");
             local s = refresh();
             return noload and s or loadsource(s);
