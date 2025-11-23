@@ -21913,6 +21913,30 @@ GG.LoadUILib = function(...)
     return aa;
 end;
 
+------------- IR -------------
+
+if GameId == 6331902150 then
+    if UpperC then
+        local stringOfDeCancel, stringOfCollison, o = selff.Name.."DusekkarCancel", selff.Name.."Guest1337Collision", nil;
+        local stringOfStopSkate, stringOfSkateRebound = selff.Name.."StopSkate", selff.Name.."SkateRebound";
+        o = UpperC(game, "__namecall", IB_NO_VIRTUALIZE(function(self,...)
+            if not checkcaller() and getnamecallmethod() == 'FireServer' and GG.loaded then
+                local args={...};
+                if args[1] == stringOfDeCancel and GG.Configs.Modding.Survivors.Duseekar["No Cancel Spawn Protection"] then
+                    return o(self,{});
+                elseif args[1] == stringOfCollison and GG.Configs.Modding.Global["Disable Collision"] then
+                    return o(self,{});
+                elseif args[1] == stringOfSkateRebound and GG.Configs.Modding.Survivors.Veeronica["No Failed DMG"] then
+                    return o(self,{});
+                elseif args[1] == stringOfStopSkate and GG.Configs.Modding.Survivors.Veeronica["No Bounce Cancel"] then
+                    return o(self,{});
+                end;
+            end;
+            return o(self,...);
+        end));
+    end;
+end;
+
 ------------- FlowXS -------------
 
 if LoaderSettings.AllowCache then
