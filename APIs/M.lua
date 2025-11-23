@@ -50,6 +50,8 @@ GG.LoaderSettings = (LoaderSettings and LoaderSettings.ExecutedByUser and Loader
     AllowAddOn = true; -- Enable Tab.AddOn
 
     AllowVULX_pvCMD = true; -- Allow Private Users to use cmd and control other users
+
+    AllowServer_Customization = false;
 };
 
 LoaderSettings.TheMimicLoader = LoaderSettings.TheMimicLoader or {
@@ -419,6 +421,7 @@ for i=1, 3 do
             Clone = game.Clone;
             GetFullName = game.GetFullName;
             PropChangeSignal = game.GetPropertyChangedSignal;
+            AttChangeSignal = game.GetAttributeChangedSignal;
 
             GetNetworkPing = P.LocalPlayer.GetNetworkPing;
             GetPlayers = P.GetPlayers;
@@ -604,6 +607,17 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
             tablein(tbl, v.Name);
         end; return tbl;
     end;
+    function CommonF:GetNearestPlayer():(Player,number)
+        local nearest, dista = nil, mmaths.huge;
+        for _, p in pir(GetPlayers(P)) do
+            if p ~= selff and p.Character and FindFirstChild(p.Character,"HumanoidRootPart") then
+                local d = dist(p.Character.HumanoidRootPart.Position);
+                if d < dista then
+                    dista = d; nearest = p;
+                end;
+            end;
+        end; return nearest, dista;
+    end;    
     function CommonF:GetTime(...): string
         local currentTime:number=L.ClockTime;
         if currentTime >= 6 and currentTime < 18 then
