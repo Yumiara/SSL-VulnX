@@ -556,6 +556,17 @@ GG.loadScriptFromCache = function(srcName, fileName, noload, custom_time, is_ign
     end;
 end;
 
+local AC_Call, AC_Error = pcal(function(): boolean
+    if AlreadyLoadACI then return true; end;
+    local ACI:(any)->({}),ACI_Source:nil = loadScriptFromCache("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp", "MultiAC.cpp", false, 1000000, false), nil;
+    if not ACI then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [1]"); end;
+    if ACI.Version ~= "2023_ACI_2025" then
+        ACI_Source = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp")(); ACI = loadstring(ACI_Source);
+        if ACI.Version ~= "2023_ACI_2025" then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [2]"); end;
+    end; if LoaderSettings.AllowCache and ACI_Source then writefile("FlowXS/MultiAC.cpp", ACI_Source); end;
+    return ACI.Function();
+end); if not AC_Call then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [3]"), setc(AC_Error); end;
+
 ------------- Script Asset / Script Cache 1 -------------
 
 GG.AssetStorage = {};
@@ -2548,7 +2559,7 @@ AssetStorage.Files = function()
         if appendfile and isfile then
             return (isfile(a) and appendfile(a,b));
         end;
-        return warn("[Flow] : Error : appendfile or isfile is not a valid function.");
+        return warn("[VULNX] : Error : appendfile or isfile is not a valid function.");
     end;
     function FileSys:ListFrom( a : folderName , is_fullname : boolean , filesynx : string )
         if listfiles and isfolder then
@@ -2571,7 +2582,7 @@ AssetStorage.Files = function()
             end;
             return list;
         end;
-        warn("[Flow] : Error : listfiles or isfolder is not a valid function.");
+        warn("[VULNX] : Error : listfiles or isfolder is not a valid function.");
         return {}; 
     end;
     function FileSys:WriteFrom( a : folderName , b : fileName , c : string ): nil
@@ -2585,14 +2596,14 @@ AssetStorage.Files = function()
             end;
             return writefile(FileSysOrigin .. a .. "/" .. b, datas);
         end;
-        return warn("[Flow] : Error : isfolder or writefile is not a valid function.");
+        return warn("[VULNX] : Error : isfolder or writefile is not a valid function.");
     end;
     function FileSys:ConvertTo( data : any , format : string ): any
         if format == "Lua" then
             if type(data) == 'string' then
                 return "return function() " .. data .. "end";
             end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+            return warn("[VULNX] : ConvertTo : Error : Argument #1 must be string.");
         elseif format == "LuaJA" then
             if type(data) == 'table' then
                 local str = "{"
@@ -2612,14 +2623,14 @@ AssetStorage.Files = function()
                 str = str .. "}";
                 return "return " .. str;
             end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be string.");
+            return warn("[VULNX] : ConvertTo : Error : Argument #1 must be string.");
         elseif format == "JSON" then
             if type(data) == 'table' then
                 -- Format to string;
             end;
-            return warn("[Flow] : ConvertTo : Error : Argument #1 must be table.");
+            return warn("[VULNX] : ConvertTo : Error : Argument #1 must be table.");
         elseif format == "Encrypt" then
-            return warn("[Flow] : ConvertTo : Log : You are currently using demo filesystem.");
+            return warn("[VULNX] : ConvertTo : Log : You are currently using demo filesystem.");
         end;
     end;
     function FileSys:RepairTbl(tbl: table): table
@@ -21913,30 +21924,6 @@ GG.LoadUILib = function(...)
     return aa;
 end;
 
-------------- IR -------------
-
-if GameId == 6331902150 then
-    if UpperC then
-        local stringOfDeCancel, stringOfCollison, o = selff.Name.."DusekkarCancel", selff.Name.."Guest1337Collision", nil;
-        local stringOfStopSkate, stringOfSkateRebound = selff.Name.."StopSkate", selff.Name.."SkateRebound";
-        o = UpperC(game, "__namecall", IB_NO_VIRTUALIZE(function(self,...)
-            if not checkcaller() and getnamecallmethod() == 'FireServer' and GG.loaded then
-                local args={...};
-                if args[1] == stringOfDeCancel and GG.Configs.Modding.Survivors.Duseekar["No Cancel Spawn Protection"] then
-                    return o(self,{});
-                elseif args[1] == stringOfCollison and GG.Configs.Modding.Global["Disable Collision"] then
-                    return o(self,{});
-                elseif args[1] == stringOfSkateRebound and GG.Configs.Modding.Survivors.Veeronica["No Failed DMG"] then
-                    return o(self,{});
-                elseif args[1] == stringOfStopSkate and GG.Configs.Modding.Survivors.Veeronica["No Bounce Cancel"] then
-                    return o(self,{});
-                end;
-            end;
-            return o(self,...);
-        end));
-    end;
-end;
-
 ------------- FlowXS -------------
 
 if LoaderSettings.AllowCache then
@@ -21962,7 +21949,7 @@ if GG.ALLVersion["MainLoader"] == nil then
 end;
 
 GG.ScriptStatus = "Finish Intializing API_M";
-warn("[Flow] : Loaded Main.lua via execution");
+warn("[VULNX] : Loaded Main.lua via execution");
 
 ------------- Source Loader -------------
 
