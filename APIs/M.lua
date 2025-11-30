@@ -21927,7 +21927,7 @@ if not GG.ALLVersion then
         local FlowXSVersion = readfile("FlowXSVersion.json");
         if FlowXSVersion then
             GG.ALLVersion = DeCodeJ(HttpService, FlowXSVersion);
-        elseu
+        else
             GG.ALLVersion = {["MagicCity"] = true};
         end;
     else
