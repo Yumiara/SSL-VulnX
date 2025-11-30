@@ -21927,7 +21927,7 @@ if not GG.ALLVersion then
         local FlowXSVersion = readfile("FlowXSVersion.json");
         if FlowXSVersion then
             GG.ALLVersion = DeCodeJ(HttpService, FlowXSVersion);
-        else
+        elseu
             GG.ALLVersion = {["MagicCity"] = true};
         end;
     else
@@ -21938,18 +21938,16 @@ if GG.ALLVersion["MainLoader"] == nil then
     GG.ALLVersion["MainLoader"] = tos(tick());
 end;
 
-if not strfind(ExecName, "Solara") then
-    local AC_Call, AC_Error = pcal(function(): boolean
-        if AlreadyLoadACI then return true; end;
-        local ACI:(any)->({}),ACI_Source:nil = loadScriptFromCache("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp", "MultiAC.cpp", false, 1000000, false), nil;
-        if not ACI then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [1]"); end;
-        if ACI.Version ~= "2023_ACI_2025" then
-            ACI_Source = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp")(); ACI = loadstring(ACI_Source);
-            if ACI.Version ~= "2023_ACI_2025" then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [2]"); end;
-        end; if LoaderSettings.AllowCache and ACI_Source then writefile("FlowXS/MultiAC.cpp", ACI_Source); end;
-        return ACI.Function();
-    end); if not AC_Call then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [3]"), setc(AC_Error); end;
-end;
+local AC_Call, AC_Error = pcal(function(): boolean
+    if AlreadyLoadACI then return true; end;
+    local ACI:(any)->({}),ACI_Source:nil = loadScriptFromCache("https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp", "MultiAC.cpp", false, 1000000, false), nil;
+    if not ACI then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [1]"); end;
+    if ACI.Version ~= "2023_ACI_2025_2" then
+        ACI_Source = HttpGet(game, "https://raw.githubusercontent.com/Yumiara/SSL-VulnX/refs/heads/main/APIs/MultiAC.cpp")(); ACI = loadstring(ACI_Source);
+        if ACI.Version ~= "2023_ACI_2025_2" then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [2]"); end;
+    end; if LoaderSettings.AllowCache and ACI_Source then writefile("FlowXS/MultiAC.cpp", ACI_Source); end;
+    return ACI.Function();
+end); if not AC_Call then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [3]"), setc(AC_Error); end;
 
 GG.ScriptStatus = "Finish Intializing API_M";
 warn("[VULNX] : Loaded Main.lua via execution");
