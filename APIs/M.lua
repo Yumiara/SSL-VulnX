@@ -642,6 +642,12 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
             tablein(NewTBL,i);
         end; return newTable
     end;
+    function CommonF:tEqual(a, b)
+        local ca, cb = 0, 0;
+        tEach(a, function() ca += 1 end);
+        tEach(b, function() cb += 1 end);
+        return ca == cb;
+    end;
     function CommonF:SKey(key:Enum,...): nil
         return VirtualInputManager:SendKeyEvent(true, key, false, game);
     end;
@@ -802,6 +808,9 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
             end;
         end;
     end;
+    function CommonF:Rejoin()
+        return TeleportService:TeleportToPlaceInstance(PlaceId, game.JobId, selff);
+    end;
     return CommonF;
 end;
 AssetStorage.GraphicsPlay = function(...): {[string]:(any)->(...any)}
@@ -949,8 +958,8 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
     function Windy:UIFromData( tab:Tab, data:{any}, path:string ): nil
         for i,v in ipir(data) do
             if v.__type == "Module" then
-                if v.__dat then
-                    self:UIFromModule(tab,v.__dat,path,v.Title,v.allign); continue;
+                if v.__dats then
+                    self:UIFromModule(tab,v.__dats,path,v.Title,v.allign); continue;
                 else
                     self:UIFromData(tab,v.__data,path); continue;
                 end;
@@ -968,14 +977,7 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 end;
                 t[ Splited[#Splited] ] = state;
             end;
-            if v.__type == "Button" then
-                tab:Button(v);
-            elseif v.__type == "Toggle" then
-                Functions:AutoSetupToggle(tab, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
-            elseif v.__type == "Slider" then
-                v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
-                tab:Slider(v);
-            elseif v.__type == "Dropdown" then
+            if v.__type == "Dropdown" then
                 v.Value = (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value;
                 v.AllowNone = v.AllowNone or false;
                 if v.RECall then
@@ -989,6 +991,11 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 tab:Dropdown(v);
             elseif v.__type == "Keybind" then
                 self:AutoSetupKeybind(tab, v, ScriptCache.AutoConfigPathCache[path.."/"..v.Path]);
+            elseif v.__type == "Toggle" then
+                Functions:AutoSetupToggle(tab, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
+            elseif v.__type == "Slider" then
+                v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
+                tab:Slider(v);
             elseif v.__type == "Code" then
                 if v.RECall then
                     local CodeT = tab:Code(v);
@@ -999,129 +1006,67 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                     continue;
                 end;
                 tab:Code(v);
-            elseif v.__type == "Input" then
-                tab:Input(v);
-            elseif v.__type == "Divider" then
-                tab:Divider();
-            elseif v.__type == "Section" then
-                tab:Section(v);
+            else
+                tab[v.__type](tab, v);
             end;
         end;
     end;
-    function Windy:UIFromModule(tab:Tab,dat:{[nil]:{[string]:any}},path:string,title:string,allign:TextXAlignment): nil
-        local MagicModuleDrops = {}; MagicModuleDrops[#MagicModuleDrops + 1] = tab:Button({
-            Title = title;
-            Callback = function()
-                for _,v1 in pir(MagicModuleDrops) do
-                    if _ ~= 1 then
-                        if type(v1) ~= 'table' then
-                            v1.Visible = not v1.Visible;
-                        else
-                            if v1.__type == "Section" then
-                                v1.UIElements.Main.Visible = not v1.UIElements.Main.Visible
-                            else
-                                self:VisibilityModuleSet(v1);
-                            end;
+    function Windy:UIFromModule(tab:Tab,dats:{[nil]:{[string]:any}},path:string,title:string,allign:TextXAlignment): nil
+        local maxdats=#dats;
+        local Group = tab:Group({});
+        for i, dat in ipir(dats) do
+            local mod = Group:Section({
+                Title = dat.Title;
+                Box = true,
+                Opened = dat.Open,
+            }); for _, v in ipir(dat.__dat) do
+                if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then
+                    self:GetConfigFromPath(v.Path, path);
+                end;
+                v.Callback = v.Callback or function(state)
+                    local fullPath = path.."/"..v.Path;
+                    ScriptCache.AutoConfigPathCache[fullPath] = state;
+                    local Splited = strsplit(fullPath,"/");
+                    local t = Configs;
+                    for i = 1, #Splited - 1 do
+                        t = t[ Splited[i] ];
+                    end;
+                    t[ Splited[#Splited] ] = state;
+                end;
+                if v.__type == "Dropdown" then
+                    v.Value = (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value;
+                    v.AllowNone = v.AllowNone or false;
+                    if v.RECall then
+                        local drp = mod:Dropdown(v);
+                        v.RECall.Callback = function()
+                            return drp:Refresh(v.RECall.RECall());
                         end;
+                        mod:Button(v.RECall);
+                        continue;
                     end;
-                end;
-            end
-        });
-        for i,v in ipir(dat) do
-            if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then self:GetConfigFromPath(v.Path, path); end;
-            v.Callback = v.Callback or function(state)
-                local fullPath = path.."/"..v.Path;
-                ScriptCache.AutoConfigPathCache[fullPath] = state;
-                local Splited = strsplit(fullPath,"/");
-                local t = Configs;
-                for ic = 1, #Splited - 1 do
-                    t = t[ Splited[ic] ];
-                end;
-                t[ Splited[#Splited] ] = state;
-            end;
-            if v.__type == "Button" then
-                local btn = tab:Button(v);
-                btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
-                MagicModuleDrops[#MagicModuleDrops + 1] = btn;
-            elseif v.__type == "Toggle" then
-                local tgg = Functions:AutoSetupToggle(tab, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
-                tgg.ToggleFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                tgg.ToggleFrame.UIElements.Main.ImageTransparency = 0.98;
-                MagicModuleDrops[#MagicModuleDrops + 1] = tgg;
-            elseif v.__type == "Slider" then
-                v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
-                local sld = tab:Slider(v);
-                sld.SliderFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                sld.SliderFrame.UIElements.Main.ImageTransparency = 0.98;
-                MagicModuleDrops[#MagicModuleDrops + 1] = sld;
-            elseif v.__type == "Dropdown" then
-                v.Value = (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value;
-                v.AllowNone = v.AllowNone or false;
-                local drp = nil;
-                if v.RECall then
-                    drp = tab:Dropdown(v);
-                    v.RECall.Callback = function()
-                        return drp:Refresh(v.RECall.RECall());
+                    mod:Dropdown(v);
+                elseif v.__type == "Keybind" then
+                    self:AutoSetupKeybind(mod, v, ScriptCache.AutoConfigPathCache[path.."/"..v.Path]);
+                elseif v.__type == "Toggle" then
+                    Functions:AutoSetupToggle(mod, v, (v.Path and ScriptCache.AutoConfigPathCache[path.."/"..v.Path]) or v.Value);
+                elseif v.__type == "Slider" then
+                    v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
+                    mod:Slider(v);
+                elseif v.__type == "Code" then
+                    if v.RECall then
+                        local CodeT = mod:Code(v);
+                        v.RECall.Callback = function(...)
+                            return CodeT:SetCode(v.RECall.RECallback() or "");
+                        end
+                        mod:Button(v.RECall);
+                        continue;
                     end;
-                    local btn = tab:Button(v.RECall);
-                    btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                    btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
-                    MagicModuleDrops[#MagicModuleDrops + 1] = btn;
-                end;
-                drp = drp or tab:Dropdown(v);
-                drp.DropdownFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                drp.DropdownFrame.UIElements.Main.ImageTransparency = 0.98;
-                MagicModuleDrops[#MagicModuleDrops + 1] = drp;
-            elseif v.__type == "Keybind" then
-                local keb = self:AutoSetupKeybind(tab, v, ScriptCache.AutoConfigPathCache[path.."/"..v.Path]);
-                keb.KeybindFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                keb.KeybindFrame.UIElements.Main.ImageTransparency = 0.98;
-                MagicModuleDrops[#MagicModuleDrops + 1] = keb;
-            elseif v.__type == "Code" then
-                local CodeT = nil;
-                if v.RECall then
-                    CodeT = tab:Code(v);
-                    v.RECall.Callback = function(...)
-                        return CodeT:SetCode(v.RECall.RECallback() or "");
-                    end
-                    local btn = tab:Button(v.RECall);
-                    btn.ButtonFrame.UIElements.Main.Size = Dim2(0.9,0,0,50);
-                btn.ButtonFrame.UIElements.Main.ImageTransparency = 0.98;
-                    MagicModuleDrops[#MagicModuleDrops + 1] = btn;
-                end;
-                CodeT = CodeT or tab:Code(v);
-                MagicModuleDrops[#MagicModuleDrops + 1] = CodeT;
-            elseif v.__type == "Input" then
-                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Input(v);
-            elseif v.__type == "Divider" then
-                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Divider();
-                MagicModuleDrops[#MagicModuleDrops].Size = Dim2(0.7,0,0,20);
-            elseif v.__type == "Section" then
-                MagicModuleDrops[#MagicModuleDrops + 1] = tab:Section(v);
-                GG.Fuck = MagicModuleDrops[#MagicModuleDrops]
-            end;
-        end;
-        for _,v1 in pir(MagicModuleDrops) do
-            if _ ~= 1 then
-                if type(v1) ~= 'table' then
-                    v1.Visible = not v1.Visible;
+                    mod:Code(v);
                 else
-                    if v1.__type == "Section" then
-                        v1.UIElements.Main.Visible = not v1.UIElements.Main.Visible
-                    else
-                        self:VisibilityModuleSet(v1);
-                    end;
+                    mod[v.__type](mod, v);
                 end;
-            else
-                v1.UIElements.ButtonIcon.Visible = false;
-                if allign then
-                    for _,v4 in pir(GetChildren(v1.ButtonFrame.UIElements.Container.Frame.Frame)) do
-                        if IsA(v4, "TextLabel") and v4.Text ~= "" then
-                            v4.TextXAlignment = allign;
-                        end;
-                    end;
-                end;
+            end; if i < maxdats then
+                Group:Space();
             end;
         end;
     end;
@@ -2795,7 +2740,7 @@ end;
 GG.error_handler = function(...)
     return warn("[VULNX] : Error : " .. ...);
 end;
-GG.dist = function( position : Vector3 )
+GG.dist = function( position : Vector3 ): Magnitude
     return selff:DistanceFromCharacter(position);
 end;
 
@@ -3066,6 +3011,102 @@ GG.BossList = (PlaceId == 2753915549 and {
     "Soul Reaper",
     "Cake Queen"
 }) or {};
+GG.MaterialList = (GameId == 7671049560 and {
+	"Tiny Essence",
+	"Small Essence",
+	"Medium Essence",
+	"Large Essence",
+	"Greater Essence",
+	"Superior Essence",
+	"Epic Essence",
+	"Legendary Essence",
+	"Mythical Essence",
+});
+GG.OreList = (GameId == 7671049560 and {
+	"Sand Stone",
+	"Copper",
+	"Fichilliumorite",
+	"Platinum",
+	"Fichillium",
+	"Gold",
+	"Tin",
+	"Stone",
+	"Silver",
+	"Galaxite",
+	"Iron",
+	"Starite",
+	"Mushroomite",
+	"Grass",
+	"Bananite",
+	"Poopite",
+	"Aite",
+	"Cardboardite",
+	"Eye Ore",
+	"Demonite",
+	"Slimite",
+	"Boneite",
+	"Cuprite",
+	"Dark Boneite",
+	"Cobalt",
+	"Titanium",
+	"Lapis Lazuli",
+	"Quartz",
+	"Amethyst",
+	"Topaz",
+	"Diamond",
+	"Sapphire",
+	"Emerald",
+	"Magmaite",
+	"Obsidian",
+	"Mythril",
+	"Uranium",
+	"Darkryte",
+	"Rivalite",
+	"Ruby",
+	"Fireite",
+	"Lightite",
+	"Volcanic Rock",
+	"Magenta Crystal",
+	"Orange Crystal",
+	"Rainbow Crystal",
+	"Arcane Crystal",
+	"Crimson Crystal",
+	"Blue Crystal",
+	"Green Crystal",
+});
+GG.RunesList = (GameId == 7671049560 and {
+	"Blast Chip",
+	"Miner Shard",
+	"Miner Shard 2",
+	"Venom Crumb",
+	"Drain Edge",
+	"Briar Notch",
+	"Rot Stitch",
+	"Developer Sigil",
+	"Frost Speck",
+	"Chill Dust",
+	"Flame Spark",
+	"Rage Mark",
+	"Ward Patch",
+});
+GG.WeaponList = (GameId == 7671049560 and {
+	"Gauntlet",
+	"Medium Chestplate",
+	"Straight Sword",
+	"Light Leggings",
+	"Heavy Leggings",
+	"Katana",
+	"Heavy Chestplate",
+	"Colossal Sword",
+	"Medium Helmet",
+	"Medium Leggings",
+	"Great Axe",
+	"Great Sword",
+	"Heavy Helmet",
+	"Light Chestplate",
+	"Light Helmet",
+	"Dagger",
+});
 
 ------------- WindUI -------------
 
@@ -8526,6 +8567,7 @@ GG.LoadUILib = function()
                         ap.Top.Size = Dim2(1, 0, 0, al.HeaderSize);
                         ap.Top.AutomaticSize = "None";
                         ap.Content.Visible = true;
+                        an.ImageLabel.Parent.Parent.Parent.Content.Visible = false;
                     end; if al.Opened then
                         al:Open();
                     end;
@@ -12146,6 +12188,7 @@ local FreeCLoad = {
     [-2] = "";
 	[7597195391] = "7597195391";
     [6331902150] = "6331902150";
+    [7671049560] = "7671049560";
 };
 local FreeLoad = {
     [-3] = "";
