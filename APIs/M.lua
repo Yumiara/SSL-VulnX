@@ -699,7 +699,7 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
     function CommonF:Tp(cf:CFrame,t:number,...): nil
         if not HumRSelf or not cf then return; end;
         HumRSelf.CFrame = cf;
-        return twait(t);
+        return true, twait(t);
     end;
     function CommonF:Anchored(bool:boolean): nil
         if not HumRSelf then return; end;
@@ -11472,6 +11472,16 @@ GG.LoadUILib = function()
                 clo.Frame.ImageButton.ImageColor3 = fromRGB(255,255,255);
                 clo.Frame.ImageButton.Size = Dim2(1.5,0,1.5,0);
                 as.UIElements.SideBar.Parent.Name = "Sidebar";
+                clo.Frame.ImageButton.Outline.ImageColor3 = fromRGB(255,255,255);
+                local targetobj, info = clo.Frame.ImageButton.Outline, TwInfo(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+                local t1 = TwCreate(TweenService, obj, info, { ImageTransparency = 1 });
+                local t0 = TweenService:Create(TweenService, obj, info, { ImageTransparency = 0 });
+                tspawn(function()
+                    while true do
+                        t1:Play(); t1.Completed:Wait();
+                        t0:Play(); t0.Completed:Wait();
+                    end
+                end);
                 clo.Frame.ImageButton.MouseButton1Click:Connect(function()
                     if as.UIElements.SideBar.Parent.Visible then
                         as.UIElements.SideBar.Parent.Visible = false;
@@ -12181,6 +12191,7 @@ warn("[VULNX] : Loaded Main.lua via execution");
 
 ------------- Source Loader -------------
 
+GG.SystemStackDestroy = false;
 --GG.API_Only = false;
 if GG.API_Only then return; end;
 
