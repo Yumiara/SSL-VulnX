@@ -11474,8 +11474,8 @@ GG.LoadUILib = function()
                 as.UIElements.SideBar.Parent.Name = "Sidebar";
                 clo.Frame.ImageButton.Outline.ImageColor3 = fromRGB(255,255,255);
                 local targetobj, info = clo.Frame.ImageButton.Outline, TwInfo(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-                local t1 = TwCreate(TweenService, obj, info, { ImageTransparency = 1 });
-                local t0 = TweenService:Create(TweenService, obj, info, { ImageTransparency = 0 });
+                local t1 = TwCreate(TweenService, targetobj, info, { ImageTransparency = 1 });
+                local t0 = TweenService:Create(TweenService, targetobj, info, { ImageTransparency = 0 });
                 tspawn(function()
                     while true do
                         t1:Play(); t1.Completed:Wait();
