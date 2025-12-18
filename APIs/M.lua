@@ -12181,7 +12181,7 @@ warn("[VULNX] : Loaded Main.lua via execution");
 
 ------------- Source Loader -------------
 
-GG.API_Only = false;
+--GG.API_Only = false;
 if GG.API_Only then return; end;
 
 local PrivateLoad = isPrivate and {
