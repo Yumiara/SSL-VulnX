@@ -467,10 +467,12 @@ for i=1, 3 do
 
             GetPivot = W.GetPivot;
             PivotTo = W.PivotTo;
+            FindPartsInRegion3WithIgnoreList = W.FindPartsInRegion3WithIgnoreList;
 
             IsA = game.IsA;
             Clone = game.Clone;
             GetFullName = game.GetFullName;
+            IsDescendantOf = game.IsDescendantOf;
             PropChangeSignal = game.GetPropertyChangedSignal;
             AttChangeSignal = game.GetAttributeChangedSignal;
 
