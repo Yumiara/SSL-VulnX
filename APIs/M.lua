@@ -365,6 +365,7 @@ if not ReplicatedFirst_lc then
         odate = os.date;
 
         queueOT = queueonteleport or queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or on_teleport;
+        Request = http_request or request;
     };
 
     GG.SecureEnvS = {
@@ -550,7 +551,7 @@ ScriptCache.userIdentify.unc_infos = {
     firetouchinterest = (firetouchinterest and getinfo(firetouchinterest).what) or false;
     isnetworkowner = (isnetworkowner and getinfo(isnetworkowner).what) or false;
     require = (require and getinfo(require).what) or false;
-    request = (request and getinfo(request).what) or false;
+    Request = (Request and getinfo(Request).what) or false;
     getgc = (getgc and getinfo(getgc).what) or false;
 };
 
@@ -2332,7 +2333,7 @@ AssetStorage.AI = function(): nil
     GG.AI_Request = function(Hasahc : base1Vulx) : string
         if not Hasahc or Hasahc == "" then return ""; end;
         local ok, resp = pcal(function()
-            return request({
+            return Request({
                 Url = AI_Url .. Hasahc; Method = "POST";
                 Headers = { ["Content-Type"] = "application/json"; };
                 Body = EnCodeJ(HttpService, AI_Body);
@@ -2416,7 +2417,7 @@ AssetStorage.Error405 = function(): nil
     function Error405:sendRequest(bodyStr)
         if not ErrorURL then return; end;
         return pcal(function()
-            return request({
+            return Request({
                 Url = ErrorURL, Method = "POST",
                 Headers = { ["Content-Type"] = "application/json" },
                 Body = bodyStr
@@ -2815,7 +2816,7 @@ end;
 ScriptCache.fetchDiscordInfo_Wel = ScriptCache.fetchDiscordInfo_Wel or function(url, wind)
     local res = nil;
     pcal(function()
-        res = DeCodeJ(HttpService, request({
+        res = DeCodeJ(HttpService, Request({
             Url = url,
             Method = "GET",
             Headers = { ["Accept"] = "application/json" }
@@ -3737,7 +3738,7 @@ GG.LoadUILib = function()
                     local M = "WindUI/" .. C .. "/assets/." .. F .. "-" .. x .. ".png";
                     local N, O = pcal(function()
                         tspawn(function()
-                            local N =request({Url = v, Method = "GET"}).Body; writefile(M, N);
+                            local N = Request({Url = v, Method = "GET"}).Body; writefile(M, N);
                             local O, P = pcal(getcustomasset, M);
                             if O then L.ImageLabel.Image = P; else
                                 return Destroy(L);
@@ -10854,8 +10855,7 @@ GG.LoadUILib = function()
                             local f, g =
                                 pcal(
                                 function()
-                                    local f =
-                                        request {Url = aF, Method = "GET", Headers = {["User-Agent"] = "Roblox/Exploit"}}
+                                    local f = Request {Url = aF, Method = "GET", Headers = {["User-Agent"] = "Roblox/Exploit"}}
                                     writefile(d, f.Body)
                                 end
                             )
@@ -10905,8 +10905,7 @@ GG.LoadUILib = function()
                         local f, g =
                             pcal(
                             function()
-                                local f =
-                                    request {Url = b, Method = "GET", Headers = {["User-Agent"] = "Roblox/Exploit"}}
+                                local f = Request {Url = b, Method = "GET", Headers = {["User-Agent"] = "Roblox/Exploit"}}
                                 writefile(d, f.Body)
                             end
                         )
@@ -12179,7 +12178,7 @@ end); if not AC_Call then return Kick(selff, "BYPASSING Failed, Contact Script D
 
 if not LoaderSettings.BadNetwork then
     if not isfile("FlowXS/vulnx.png") then
-        local pngfile = request({
+        local pngfile = Request({
             Url = "https://github.com/Yumiara/SSL-VulnX/raw/refs/heads/main/Assets/vul.png";
             Method = "GET";
         }); if pngfile.Success then
