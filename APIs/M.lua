@@ -551,7 +551,7 @@ ScriptCache.userIdentify.unc_infos = {
     firetouchinterest = (firetouchinterest and getinfo(firetouchinterest).what) or false;
     isnetworkowner = (isnetworkowner and getinfo(isnetworkowner).what) or false;
     require = (require and getinfo(require).what) or false;
-    Request = (Request and getinfo(Request).what) or false;
+    request = (Request and getinfo(Request).what) or false;
     getgc = (getgc and getinfo(getgc).what) or false;
 };
 
