@@ -936,6 +936,21 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
             return SystemStackDestroy;
         end);
     end;
+    function Windy:Tutorial(wind)
+        if self.AlreadyShowTUTWind then return; end;
+        if not LoaderSettings.BadNetwork then
+            if isfile("Temp_TutorialWind.vulx") then return; end;
+        end; return wind:Popup({
+            Title = "<font color='rgb(255, 255, 0)'>WARNING</font>", Icon = "circle-alert",
+            Content = "You can click the button on top, left of this Window to hide tabs.",
+            Buttons = {
+                {Title = "Okay", Variant = "Tertiary", Callback=function() self.AlreadyShowTUTWind=true; end},
+                (not LoaderSettings.BadNetwork and {Title = "Don't show again", Variant = "Tertiary", Callback=function()
+                    return writefile("Temp_TutorialWind.vulx", "WriteD-Reaction");
+                end}) or nil,
+            };
+        });
+    end;
     function Windy:GetConfigFromPath( pt:string, rp:string ): string
         pt = rp .. "/" .. pt;
         if ScriptCache.AutoConfigPathCache[pt] then
@@ -1003,13 +1018,10 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
                 tab:Slider(v);
             elseif v.__type == "Code" then
-                if v.RECall then
-                    local CodeT = tab:Code(v);
-                    v.RECall.Callback = function(...)
-                        return CodeT:SetCode(v.RECall.RECallback() or "");
-                    end
-                    tab:Button(v.RECall);
-                    continue;
+                if v.StartWith then
+                    v.Code = self:GetConfigFromPath(v.StartWith.VA, v.StartWith.S) or "-";
+                else
+                    v.Code = v.Code or "";
                 end;
                 tab:Code(v);
             else
@@ -1026,6 +1038,11 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 Box = true,
                 Opened = dat.Open,
             }); for _, v in ipir(dat.__dat) do
+                if v.__type == "Module" then
+                    if v.__dats then
+                        self:UIFromModule(mod,v.__dats,path,v.Title,v.allign); continue;
+                    end;
+                end;
                 if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then
                     self:GetConfigFromPath(v.Path, path);
                 end;
@@ -1059,13 +1076,10 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                     v.Value.Default = ScriptCache.AutoConfigPathCache[path.."/"..v.Path] or v.Value.Default;
                     mod:Slider(v);
                 elseif v.__type == "Code" then
-                    if v.RECall then
-                        local CodeT = mod:Code(v);
-                        v.RECall.Callback = function(...)
-                            return CodeT:SetCode(v.RECall.RECallback() or "");
-                        end
-                        mod:Button(v.RECall);
-                        continue;
+                    if v.StartWith then
+                        v.Code = self:GetConfigFromPath(v.StartWith.VA, v.StartWith.S) or "-";
+                    else
+                        v.Code = v.Code or "";
                     end;
                     mod:Code(v);
                 else
@@ -4192,10 +4206,10 @@ GG.LoadUILib = function()
                         Size = Dim2(1, 0, 1, 0),
                         Active = false,
                         Visible = false,
-                        Parent = ad.Parent or (Window and Window.UIElements and Window.UIElements.Main and Window.UIElements.Main.Main)
+                        Parent = ad.Parent or (ScriptCache.Window and ScriptCache.Window.UIElements and ScriptCache.Window.UIElements.Main and ScriptCache.Window.UIElements.Main.Main)
                     }, {
                         ab("UICorner", {
-                            CornerRadius = Dim(0, Window.UICorner)
+                            CornerRadius = Dim(0, (ScriptCache.Window and ScriptCache.Window.UICorner) or Instancen("UICorner"))
                         });
                     });
                 end; ag.UIElements.Main = ab("Frame", {
@@ -12204,6 +12218,7 @@ local FreeCLoad = {
 	[7597195391] = "7597195391";
     [6331902150] = "6331902150";
     [7671049560] = "7671049560";
+    [2294168059] = "2294168059";
 };
 local FreeLoad = {
     [-3] = "";
