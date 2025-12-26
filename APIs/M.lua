@@ -12190,6 +12190,28 @@ local AC_Call, AC_Error = pcal(function(): boolean
     return ACI.Function();
 end); if not AC_Call then return Kick(selff, "BYPASSING Failed, Contact Script Devs. [3]"), setc(AC_Error); end;
 
+C.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(v)
+	if v.Name == "ErrorPrompt" then
+		Instance.new("UICorner", v);
+		local MessageArea = v:WaitForChild("MessageArea");
+		local ErrorFrame = MessageArea:WaitForChild("ErrorFrame");
+        local ButtonArea = ErrorFrame:WaitForChild("ButtonArea");
+        local LeaveButton = ButtonArea:WaitForChild("LeaveButton");
+        local ButtonLayout = ButtonArea:WaitForChild("ButtonLayout");
+        local ErrorMessage = ErrorFrame:WaitForChild("ErrorMessage");
+        local Cloned = LeaveButton:Clone();
+		v.BackgroundTransparency = 0.2; v.BackgroundColor3 = Color3.fromRGB(0,0,0);
+        Cloned.Name = "DiscordInvite"; Cloned.ButtonText.Text = "Discord Invite";
+        ButtonLayout.CellSize = UDim2.new(0,150,0,36); Cloned.Parent = ButtonArea;
+        Cloned.MouseButton1Click:Connect(function()
+            return setc and setc("https://discord.gg/DjR32bkzsQ");
+        end); if string.find(ErrorMessage.Text, "TTJY_ID7") then
+            ErrorMessage.RichText=true;
+            ErrorMessage.Text = "Your executor environment is not standard (Probably New Executor). Please try again or switch to a different executor.\n\n<font size=\"14\">Join our Discord server for recommendations or to report bugs.</font>";
+        end;
+	end;
+end);
+
 if not LoaderSettings.BadNetwork then
     if not isfile("FlowXS/vulnx.png") then
         local pngfile = Request({
