@@ -477,6 +477,7 @@ for i=1, 3 do
             PropChangeSignal = game.GetPropertyChangedSignal;
             AttChangeSignal = game.GetAttributeChangedSignal;
 
+            GetPlayerFromCharacter = P.GetPlayerFromCharacter;
             GetNetworkPing = P.LocalPlayer.GetNetworkPing;
             GetPlayers = P.GetPlayers;
 
@@ -653,6 +654,16 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
         tEach(a, function() ca += 1 end);
         tEach(b, function() cb += 1 end);
         return ca == cb;
+    end;
+    function CommonF:ColortoPrimary(color)
+        local r,g,b = color.R,color.G,color.B;
+        if r >= g and r >= b then
+            return fromRGB(255, 0, 0);
+        elseif g >= r and g >= b then
+            return fromRGB(0, 255, 0);
+        else
+            return fromRGB(0, 0, 255);
+        end;
     end;
     function CommonF:SKey(key:Enum,...): nil
         return VirtualInputManager:SendKeyEvent(true, key, false, game);
@@ -3093,6 +3104,42 @@ GG.OreList = (GameId == 7671049560 and {
 	"Crimson Crystal",
 	"Blue Crystal",
 	"Green Crystal",
+	"Tungsten",
+	"Sulfur",
+	"Pumice",
+	"Graphite",
+	"Aetherit",
+	"Scheelite",
+	"Larimar",
+	"Neurotite",
+	"Frost Fossil",
+	"Tide Carve",
+	"Velchire",
+	"Sanctis",
+	"Mistvein",
+	"Lgarite",
+	"Voidfractal",
+	"Moltenfrost",
+	"Crimsonite",
+	"Malachite",
+	"Aqujade",
+	"Cryptex",
+	"Galestor",
+	"Voidstar",
+	"Etherealite",
+	"Marblite",
+	"Suryafal",
+	"Heavenite",
+	"Gargantuan",
+	"Aether Lotus",
+	"Vanegos",
+	"Zephyte",
+	"Ceyite",
+	"Vooite",
+	"Iceite",
+	"Snowite",
+	"Mosasaursit",
+	"Coinite",
 });
 GG.RunesList = (GameId == 7671049560 and {
 	"Blast Chip",
