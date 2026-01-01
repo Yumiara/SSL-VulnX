@@ -357,7 +357,6 @@ if not ReplicatedFirst_lc then
         
         LowerC = hookfunction or hookfunc;
         UpperC = hookmetamethod;
-        ResetC = restorefunction;
 
         oclock = os.clock;
         odiff = os.difftime;
@@ -365,7 +364,6 @@ if not ReplicatedFirst_lc then
         odate = os.date;
 
         queueOT = queueonteleport or queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or on_teleport;
-        Request = http_request or request;
     };
 
     GG.SecureEnvS = {
@@ -529,6 +527,9 @@ for i=1, 3 do
         end;
     end;
 end;
+
+GG.Request = http_request or request;
+GG.ResetC = restorefunction;
 
 GG.newcclosure = newcclosure or function(...)
     return ...;
