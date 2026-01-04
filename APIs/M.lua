@@ -538,6 +538,10 @@ GG.newlclosure = newlclosure or function(...)
     return ...;
 end;
 
+GG.gethwid = gethwid or function()
+    return GetClientId(RbxAnalyticsService);
+end;
+
 if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
     ScriptCache.userIdentify.device =  "Mobile";
 elseif UserInputService.KeyboardEnabled and UserInputService.MouseEnabled then
@@ -1762,12 +1766,12 @@ AssetStorage.Key = function(): nil
             G2L["45"].Transparency= NSnew{NSKnew(0.000, 0),NSKnew(1.000, 1)};
         
             G2L["26"].Activated:Connect(function()
-                G2L["1"]:Destroy();
+                Destroy(G2L["1"]);
                 G2L["1"] = nil;
                 G2L = nil;
             end);
             G2L["11"].Activated:Connect(function()
-                G2L["1"]:Destroy();
+                Destroy(G2L["1"]);
                 G2L["1"] = nil;
                 G2L = nil;
                 return setc("https://pandadevelopment.net/getkey?service=vulx&hwid="..gethwid());
