@@ -299,6 +299,7 @@ if not ReplicatedFirst_lc then
 
         Vec3 = Vector3.new;
         Vec2 = Vector2.new;
+        VecC = vector.create;
         CF = CFrame.new;
         CFAg = CFrame.Angles;
         CFLook = CFrame.lookAt;
@@ -36795,11 +36796,11 @@ local FreeCLoad = {
     [6331902150] = "6331902150";
     [7671049560] = "7671049560";
     [2294168059] = "2294168059";
+    [7088122342] = "7088122342";
 };
 local FreeLoad = {
     [-3] = "";
 	[7597195391] = "7597195391";
-    [7088122342] = "7088122342";
 };
 local srcName : string = "";
 
