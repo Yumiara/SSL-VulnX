@@ -36038,7 +36038,9 @@ GG.LoadUILib = function()
                 ); local clo = as.UIElements.Main.Main.Topbar.Right:Clone();
                 Destroy(clo.Frame); clo.Position = Dim2(0,10,0.5,0)
                 clo.Parent = as.UIElements.Main.Main.Topbar;
-                clo.Frame.ImageButton.Image = getcustomasset("FlowXS/vulnx.png");
+                if not LoaderSettings.BadNetwork and isfolder("FlowXS") and isfile("FlowXS/vulnx.png") then
+                    clo.Frame.ImageButton.Image = getcustomasset("FlowXS/vulnx.png");
+                end;
                 clo.Frame.ImageButton.ImageColor3 = fromRGB(255,255,255);
                 clo.Frame.ImageButton.Size = Dim2(1.5,0,1.5,0);
                 as.UIElements.SideBar.Parent.Name = "Sidebar";
