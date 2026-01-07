@@ -480,6 +480,8 @@ for i=1, 3 do
             GetNetworkPing = P.LocalPlayer.GetNetworkPing;
             GetPlayers = P.GetPlayers;
 
+            TTeleport = TeleportService.Teleport;
+
             TwCreate = TweenService.Create;
 
             GetAttribute = game.GetAttribute;
@@ -725,6 +727,9 @@ AssetStorage.CommonF = function(...): {[string]:(any)->(...any)}
         if not Tool or not selc or not Tool.Parent or not Tool.Parent.Parent then return; end;
         local Humanoid:Humanoid = FindFirstChildOfClass(selc, "Humanoid");
         return Humanoid and Humanoid:EquipTool(Tool);
+    end;
+    function CommonF:TpPlace(t:number,...): nil
+        return TTeleport(TeleportService, t, selff);
     end;
     function CommonF:Tp(cf:CFrame,t:number,...): nil
         if not HumRSelf or not cf then return; end;
