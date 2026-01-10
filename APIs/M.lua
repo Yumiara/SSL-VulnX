@@ -355,9 +355,6 @@ if not ReplicatedFirst_lc then
         bwritei32 = bff and bff.writei32;
         breadstring = bff and bff.readstring;
         breadf32 = bff and bff.readf32;
-        
-        LowerC = hookfunction or hookfunc;
-        UpperC = hookmetamethod;
 
         oclock = os.clock;
         odiff = os.difftime;
@@ -533,6 +530,8 @@ end;
 
 GG.Request = http_request or request;
 GG.ResetC = restorefunction;
+GG.LowerC = hookfunction or hookfunc;
+GG.UpperC = hookmetamethod;
 
 GG.newcclosure = newcclosure or function(...)
     return ...;
@@ -27687,6 +27686,232 @@ GG.PaintingDatas = GG.PaintingDatas or (PlaceId == 96354063422506 and {
     };
 }) or {};
 
+------------- VULXUI -------------
+
+GG.LoadVUI = function(to:string)
+    if to == "DLG" then
+        local DLG = {};
+        function DLG:New()
+            local DLG2 = {}; local PSG_VULNX = Instancen("ScreenGui", C);
+            PSG_VULNX.Name = "VULXL";
+            PSG_VULNX.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+
+            local Frame = Instancen("Frame", PSG_VULNX);
+            Frame.ZIndex = 8;
+            Frame.BorderSizePixel = 0;
+            Frame.AutoLocalize = false;
+            Frame.BackgroundColor3 = fromRGB(0, 0, 0);
+            Frame.AnchorPoint = Vec2(0.5, 0.5);
+            Frame.AutomaticSize = Enum.AutomaticSize.Y;
+            Frame.Size = Dim2(0, 400, 0, 250);
+            Frame.Position = Dim2(0.5, 0, 0.5, 0);
+            Frame.Name= "ErrorPrompt";
+            Frame.BackgroundTransparency = 0.2;
+
+            local UIListLayout = Instancen("UIListLayout", Frame);
+            UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
+            UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder;
+            UIListLayout.Name = "PromptLayout";
+
+            local UIScale = Instancen("UIScale", Frame);
+            UIScale.Name = "PromptScale";
+
+            local Frame2 = Instancen("Frame", Frame);
+            Frame2.ZIndex = 8;
+            Frame2.BorderSizePixel = 0;
+            Frame2.Size = Dim2(1, 0, 0, 50);
+            Frame2.Name = [[TitleFrame]];
+            Frame2.LayoutOrder = 1;
+            Frame2.BackgroundTransparency = 1;
+
+            local TextLabel = Instancen("TextLabel", Frame2);
+            TextLabel.ZIndex = 8;
+            TextLabel.TextSize = 25;
+            TextLabel.FontFace = Fnew("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+            TextLabel.TextColor3 = fromRGB(255, 255, 255);
+            TextLabel.BackgroundTransparency = 1;
+            TextLabel.Size = Dim2(1, 0, 0, 28);
+            TextLabel.Text = "Vulnerability X Log";
+            TextLabel.Name = "ErrorTitle";
+
+            local UIPadding = Instancen("UIPadding", Frame2);
+            UIPadding.PaddingTop= Dim(0, 11);
+            UIPadding.Name= "TitleFramePadding";
+            UIPadding.PaddingBottom= Dim(0, 11);
+
+            local UICorner = Instancen("UICorner", Frame);
+
+            local Frame3 = Instancen("Frame", Frame);
+            Frame3.ZIndex = 8;
+            Frame3.BorderSizePixel = 0;
+            Frame3.BackgroundColor3 = fromRGB(190, 191, 191);
+            Frame3.Size = Dim2(1, -40, 0, 1);
+            Frame3.Name = "SplitLine";
+            Frame3.LayoutOrder = 2;
+
+            local Frame4 = Instancen("Frame", Frame);
+            Frame4.ZIndex = 8;
+            Frame4.BorderSizePixel = 0;
+            Frame4.Size = Dim2(1, 0, 0.89498, -51);
+            Frame4.Position = Dim2(0, 0, 0.13857, 0);
+            Frame4.Name= "MessageArea";
+            Frame4.LayoutOrder = 3;
+            Frame4.BackgroundTransparency = 1;
+
+            local Frame5 = Instancen("Frame", Frame4);
+            Frame5.ZIndex = 8;
+            Frame5.Size = Dim2(1, 0, 1, 0);
+            Frame5.Name = "ErrorFrame";
+            Frame5.BackgroundTransparency = 1;
+
+            local UIListLayout2 = Instancen("UIListLayout", Frame5);
+            UIListLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Center;
+            UIListLayout2.Padding = Dim(0, 20);
+            UIListLayout2.SortOrder = Enum.SortOrder.LayoutOrder;
+            UIListLayout2.Name = "ErrorFrameLayout";
+
+            local Frame6 = Instancen("Frame", Frame5);
+            Frame6.ZIndex = 8;
+            Frame6.SelectionBehaviorDown = Enum.SelectionBehavior.Stop;
+            Frame6.Size = Dim2(1, 0, 0, 36);
+            Frame6.SelectionBehaviorUp = Enum.SelectionBehavior.Stop;
+            Frame6.Name = "ButtonArea";
+            Frame6.LayoutOrder = 2;
+            Frame6.BackgroundTransparency = 1;
+            Frame6.SelectionBehaviorRight = Enum.SelectionBehavior.Stop;
+            Frame6.SelectionGroup = true;
+            Frame6.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop;
+
+            local ImageButton = Instancen("ImageButton", Frame6);
+            ImageButton.SliceCenter = Rectn(8, 8, 9, 9);
+            ImageButton.ScaleType = Enum.ScaleType.Slice;
+            ImageButton.BackgroundTransparency = 1;
+            ImageButton.ZIndex = 8;
+            ImageButton.AnchorPoint = Vec2(0.5, 0.5);
+            ImageButton.Image = "rbxasset://textures/ui/ErrorPrompt/PrimaryButton.png";
+            ImageButton.Size = Dim2(0.20833, 0, 1, 0);
+            ImageButton.LayoutOrder = 1;
+            ImageButton.Name = "LeaveButton";
+            ImageButton.Position = Dim2(0.10417, 0, 0.5, 0);
+
+            local TextLabel2 = Instancen("TextLabel", ImageButton);
+            TextLabel2.ZIndex = 8;
+            TextLabel2.TextSize = 20;
+            TextLabel2.FontFace = Fnew("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+            TextLabel2.TextColor3 = fromRGB(36, 38, 40);
+            TextLabel2.BackgroundTransparency = 1;
+            TextLabel2.Size = Dim2(1, 0, 1, 0);
+            TextLabel2.Text = "Copy Selected";
+            TextLabel2.Name = "ButtonText";
+
+            local UIGridLayout = Instancen("UIGridLayout", Frame6);
+            UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
+            UIGridLayout.CellSize = Dim2(0, 150, 0, 36);
+            UIGridLayout.VerticalAlignment = Enum.VerticalAlignment.Center;
+            UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder;
+            UIGridLayout.Name = "ButtonLayout";
+            UIGridLayout.CellPadding = Dim2(0, 10, 0, 0);
+            UIGridLayout.FillDirection = Enum.FillDirection.Vertical;
+
+            local ImageButton3 = Instancen("ImageButton", Frame6);
+            ImageButton3.SliceCenter = Rectn(8, 8, 9, 9);
+            ImageButton3.ScaleType = Enum.ScaleType.Slice;
+            ImageButton3.BackgroundTransparency = 1;
+            ImageButton3.ZIndex = 8;
+            ImageButton3.AnchorPoint = Vec2(0.5, 0.5);
+            ImageButton3.Image = "rbxasset://textures/ui/ErrorPrompt/PrimaryButton.png";
+            ImageButton3.Size = Dim2(0.20833, 0, 1, 0);
+            ImageButton3.LayoutOrder = 1;
+            ImageButton3.Name = "Copy Discord Invite";
+            ImageButton3.Position = Dim2(0.10417, 0, 0.5, 0);
+
+            local TextLabel3 = Instancen("TextLabel", ImageButton3);
+            TextLabel3.ZIndex = 8;
+            TextLabel3.TextSize = 20;
+            TextLabel3.FontFace = Fnew("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+            TextLabel3.TextColor3 = fromRGB(36, 38, 40);
+            TextLabel3.BackgroundTransparency = 1;
+            TextLabel3.Size = Dim2(1, 0, 1, 0);
+            TextLabel3.Text = "Copy All";
+            TextLabel3.Name = "ButtonText";
+
+            local ScrollingFrame = Instancen("ScrollingFrame", Frame5);
+            ScrollingFrame.Active = true;
+            ScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y;
+            ScrollingFrame.BorderSizePixel = 0;
+            ScrollingFrame.CanvasSize = Dim2(0, 0, 1, 0);
+            ScrollingFrame.BackgroundColor3 = fromRGB(255, 255, 255);
+            ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y;
+            ScrollingFrame.Size = Dim2(0.85, 0, 0.8, 0);
+            ScrollingFrame.BorderColor3 = fromRGB(0, 0, 0);
+            ScrollingFrame.BackgroundTransparency = 1;
+
+            local UIStroke = Instancen("UIStroke", ScrollingFrame);
+            UIStroke.Color= fromRGB(255, 255, 255);
+
+            local UIListLayout3 = Instancen("UIListLayout", ScrollingFrame);
+            UIListLayout3.Padding = Dim(0.03, 0);
+            UIListLayout3.SortOrder = Enum.SortOrder.LayoutOrder;
+
+            local UIPadding3 = Instancen("UIPadding", Frame4);
+            UIPadding3.PaddingTop = Dim(0, 20);
+            UIPadding3.PaddingRight = Dim(0, 20);
+            UIPadding3.Name = "MessageAreaPadding";
+            UIPadding3.PaddingLeft = Dim(0, 20);
+            UIPadding3.PaddingBottom = Dim(0, 20);
+
+            function DLG2.CSend(txt:string)
+                local TextButtonTem = Instancen("TextButton", ScrollingFrame);
+                TextButtonTem.TextWrapped = true;
+                TextButtonTem.BorderSizePixel = 0;
+                TextButtonTem.TextXAlignment = Enum.TextXAlignment.Left;
+                TextButtonTem.TextStrokeColor3 = fromRGB(255, 255, 255);
+                TextButtonTem.TextSize = 14;
+                TextButtonTem.TextColor3 = fromRGB(255, 255, 255);
+                TextButtonTem.TextYAlignment = Enum.TextYAlignment.Top;
+                TextButtonTem.BackgroundColor3 = fromRGB(255, 255, 255);
+                TextButtonTem.FontFace = Fnew([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+                TextButtonTem.ZIndex = 0;
+                TextButtonTem.BackgroundTransparency = 1;
+                TextButtonTem.Size = Dim2(0.96, 0, 0.15345, 0);
+                TextButtonTem.BorderColor3 = fromRGB(0, 0, 0);
+                TextButtonTem.Text = txt;
+
+                local Divider = Instancen("Frame", ScrollingFrame);
+                Divider.ZIndex= 0;
+                Divider.BorderSizePixel= 0;
+                Divider.BackgroundColor3= fromRGB(190, 191, 191);
+                Divider.ClipsDescendants= true;
+                Divider.Size= Dim2(1, 0, 0, 1);
+                Divider.Position= Dim2(0, 0, 1, 15);
+                Divider.Name= "SplitLine";
+            end; GG.CSend = DLG2.CSend; 
+            local dragging, dragStart, startPos = false;
+            local function update(input)
+                local delta = input.Position - dragStart;
+                Frame.Position = Dim2(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y);
+            end; Frame.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true; dragStart = input.Position; startPos = Frame.Position;
+                    input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            dragging = false;
+                        end;
+                    end);
+                end;
+            end); Frame.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch then
+                    if dragging then
+                        update(input);
+                    end;
+                end;
+            end); return DLG2;
+        end; return DLG;
+    end; return {};
+end;
+
 ------------- WindUI -------------
 
 GG.LoadUILib = function()
@@ -36770,6 +36995,8 @@ C.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(v)
         end); if string.find(ErrorMessage.Text, "TTJY_ID7") then
             ErrorMessage.RichText=true;
             ErrorMessage.Text = "Your executor environment is not standard (Probably New Executor). Please try again or switch to a different executor.\n\n<font size=\"14\">Join our Discord server for recommendations or to report bugs.</font>";
+        elseif string.find(ErrorMessage.Text, "ID500:V") then
+            ErrorMessage.Text = "Volt Detected by Vulnerability X\n\n Please rejoin to take another step to our Authentication."
         end;
 	end;
 end);
