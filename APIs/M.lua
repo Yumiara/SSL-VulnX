@@ -203,7 +203,7 @@ if not ReplicatedFirst_lc then
         RNew = Random.new;
 
         twait = tk.wait;
-        tdefer = tk.tdefer;
+        tdefer = tk.defer;
         tspawn = tk.spawn;
         tcancel = tk.cancel;
         tdelay = task.delay;
@@ -538,6 +538,10 @@ GG.newcclosure = newcclosure or function(...)
 end;
 GG.newlclosure = newlclosure or function(...)
     return ...;
+end;
+
+GG.SetAttribute2 = function(obj:Instance, att:string, string:string)
+    return SetAttribute(obj, att, ""), SetAttribute(obj, att, string);
 end;
 
 GG.gethwid = gethwid or function()
@@ -1067,6 +1071,7 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
         local maxdats=#dats;
         local Group = tab:Group({});
         for i, dat in ipir(dats) do
+            if not dat.__dat then continue; end;
             local mod = Group:Section({
                 Title = dat.Title;
                 Box = true,
@@ -36996,7 +37001,7 @@ C.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(v)
             ErrorMessage.RichText=true;
             ErrorMessage.Text = "Your executor environment is not standard (Probably New Executor). Please try again or switch to a different executor.\n\n<font size=\"14\">Join our Discord server for recommendations or to report bugs.</font>";
         elseif string.find(ErrorMessage.Text, "ID500:V") then
-            ErrorMessage.Text = "Volt Detected by Vulnerability X\n\n Please rejoin to take another step to our Authentication."
+            ErrorMessage.Text = "Volt Detected by Vulnerability X\n\n Please rejoin to take another step to our Authentication.";
         end;
 	end;
 end);
@@ -37031,6 +37036,7 @@ local FreeCLoad = {
     [7671049560] = "7671049560";
     [2294168059] = "2294168059";
     [7088122342] = "7088122342";
+    [1176784616] = "1176784616";
 };
 local FreeLoad = {
     [-3] = "";
