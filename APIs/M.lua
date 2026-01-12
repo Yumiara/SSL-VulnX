@@ -2634,6 +2634,7 @@ AssetStorage.Files = function()
                 else
                     corrected_name = f:match("([^/\\]+)%.macro$");
                 end;
+                if not corrected_name then continue; end;
                 if filesynx then
                     corrected_name = corrected_name .. filesynx;
                 end;
