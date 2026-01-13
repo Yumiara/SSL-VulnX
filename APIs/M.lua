@@ -291,6 +291,8 @@ if not ReplicatedFirst_lc then
         FfromName = Font.fromName;
         Fnew = Font.new;
 
+        Rayn = Ray.new;
+
         Regnew = Reg3.new;
 
         TwInfo = TweenInfo.new;
@@ -304,6 +306,7 @@ if not ReplicatedFirst_lc then
         CFAg = CFrame.Angles;
         CFLook = CFrame.lookAt;
         CFMat = CFrame.fromMatrix;
+        CFo = CFrame.fromOrientation;
 
         pir = pairs;
         ipir = ipairs;
@@ -366,6 +369,7 @@ if not ReplicatedFirst_lc then
 
     GG.SecureEnvS = {
         ProximityPromptService = "ProximityPromptService";
+        ContextActionService  = "ContextActionService";
         VirtualInputManager = "VirtualInputManager";
         RbxAnalyticsService = "RbxAnalyticsService";
         LocalizationService = "LocalizationService";
@@ -464,6 +468,7 @@ for i=1, 3 do
 
             GetPivot = W.GetPivot;
             PivotTo = W.PivotTo;
+            FindPartOnRay = W.FindPartOnRay;
             FindPartsInRegion3WithIgnoreList = W.FindPartsInRegion3WithIgnoreList;
 
             IsA = game.IsA;
@@ -2790,6 +2795,277 @@ AssetStorage.fireproximityprompt = function()
     GG.Resetfireprox = function()
         GG.fireproximityprompt = originalUNC;
     end;
+end;
+AssetStorage.Freecam = function()
+    return {["NewFreeCam"] = function(BlacklistedKey, args)
+        if ScriptCache.ExecutedFreecam then return; end; ScriptCache.ExecutedFreecam = true;
+        warn("A")
+        local TOGGLE_INPUT_PRIORITY = Enum.ContextActionPriority.Low.Value;
+        local INPUT_PRIORITY = Enum.ContextActionPriority.High.Value;
+        local FREECAM_MACRO_KB = {Enum.KeyCode.LeftShift, Enum.KeyCode.P};
+        local VEL_STIFFNESS, PAN_STIFFNESS, FOV_STIFFNESS = 1.5, 1, 4;
+        local NAV_GAIN, PAN_GAIN = Vec3(1, 1, 1)*64, Vec2(0.75, 1)*8;
+        local FOV_GAIN, PITCH_LIMIT = 300, mrad(90); warn("b") local Spring = {} do
+            Spring.__index = Spring; function Spring.new(freq, pos)
+                local self = setmetatable({}, Spring);
+                self.f = freq; self.p = pos; self.v = pos*0;
+                return self
+            end; function Spring:Update(dt, goal)
+                local f, p0, v0 = self.f*2*mmaths.pi, self.p, self.v;
+                local offset, decay = goal - p0, mexp(-f*dt);
+                local p1 = goal + (v0*dt - offset*(f*dt + 1))*decay
+                local v1 = (f*dt*(offset*f - v0) + v0)*decay
+                self.p = p1; self.v = v1;
+                return p1
+            end; function Spring:Reset(pos)
+                self.p = pos;
+                self.v = pos*0;
+            end;
+        end; warn("c") local cameraPos, cameraRot, cameraFov = Vec3(), Vec2(), 0;
+        local velSpring = Spring.new(VEL_STIFFNESS, cameraPos);
+        local panSpring = Spring.new(PAN_STIFFNESS, cameraRot);
+        local fovSpring = Spring.new(FOV_STIFFNESS, 0); local Input = {} do
+            local thumbstickCurve = nil; do
+                local K_CURVATURE, K_DEADZONE = 2, 0.15;
+                local function fCurve(x)
+                    return (mexp(K_CURVATURE*x) - 1)/(mexp(K_CURVATURE) - 1);
+                end; local function fDeadzone(x)
+                    return fCurve((x - K_DEADZONE)/(1 - K_DEADZONE));
+                end; function thumbstickCurve(x)
+                    return msign(x)*mclamp(fDeadzone(mabs(x)), 0, 1);
+                end; warn("a12")
+            end; warn("exita12") local gamepad = {
+                ButtonX = 0,
+                ButtonY = 0,
+                DPadDown = 0,
+                DPadUp = 0,
+                ButtonL2 = 0,
+                ButtonR2 = 0,
+                Thumbstick1 = Vec2(),
+                Thumbstick2 = Vec2(),
+            }; local keyboard = {
+                W = 0, A = 0, S = 0, D = 0,
+                E = 0, Q = 0, U = 0, H = 0,
+                J = 0, K = 0, I = 0, Y = 0,
+                Up = 0, Down = 0, LeftShift = 0, RightShift = 0,
+            }; local mouse = {
+                Delta = Vec2(),
+                MouseWheel = 0,
+            }; local NAV_GAMEPAD_SPEED = Vec3(1, 1, 1); warn("aa13")
+            local NAV_KEYBOARD_SPEED = Vec3(1, 1, 1);
+            local PAN_MOUSE_SPEED = Vec2(1, 1)*(mmaths.pi/64);
+            local PAN_GAMEPAD_SPEED = Vec2(1, 1)*(mmaths.pi/8);
+            local FOV_WHEEL_SPEED = 1;
+            local FOV_GAMEPAD_SPEED = 0.25;
+            local NAV_ADJ_SPEED = 0.75;
+            local NAV_SHIFT_MUL = 0.25;
+            local navSpeed = 1; warn("a133") function Input.Vel(dt)
+                navSpeed = mclamp(navSpeed + dt*(keyboard.Up - keyboard.Down)*NAV_ADJ_SPEED, 0.01, 4);
+                local kGamepad = Vec3(
+                    thumbstickCurve(gamepad.Thumbstick1.x),
+                    thumbstickCurve(gamepad.ButtonR2) - thumbstickCurve(gamepad.ButtonL2),
+                    thumbstickCurve(-gamepad.Thumbstick1.y)
+                )*NAV_GAMEPAD_SPEED; local kKeyboard = Vec3(
+                    keyboard.D - keyboard.A + keyboard.K - keyboard.H,
+                    keyboard.E - keyboard.Q + keyboard.I - keyboard.Y,
+                    keyboard.S - keyboard.W + keyboard.J - keyboard.U
+                )*NAV_KEYBOARD_SPEED;
+                local shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift);
+                return (kGamepad + kKeyboard)*(navSpeed*(shift and NAV_SHIFT_MUL or 1));
+            end; warn("a14") function Input.Pan(dt)
+                local kGamepad = Vec2(
+                    thumbstickCurve(gamepad.Thumbstick2.y),
+                    thumbstickCurve(-gamepad.Thumbstick2.x)
+                )*PAN_GAMEPAD_SPEED;
+                local kMouse = mouse.Delta*PAN_MOUSE_SPEED;
+                mouse.Delta = Vec2();
+                return kGamepad + kMouse;
+            end; function Input.Fov(dt)
+                local kGamepad = (gamepad.ButtonX - gamepad.ButtonY)*FOV_GAMEPAD_SPEED;
+                local kMouse = mouse.MouseWheel*FOV_WHEEL_SPEED;
+                mouse.MouseWheel = 0;
+                return kGamepad + kMouse;
+            end; do warn("aa")
+                local function Keypress(action, state, input)
+                    if input.KeyCode == Enum.KeyCode.P then return Enum.ContextActionResult.Pass; end;
+                    if tablef(BlacklistedKey, input.KeyCode.Name) then return Enum.ContextActionResult.Sink; end;
+                    keyboard[input.KeyCode.Name] = state == Enum.UserInputState.Begin and 1 or 0;
+                    return Enum.ContextActionResult.Sink;
+                end; local function GpButton(action, state, input)
+                    gamepad[input.KeyCode.Name] = state == Enum.UserInputState.Begin and 1 or 0;
+                    return Enum.ContextActionResult.Sink;
+                end; local function MousePan(action, state, input)
+                    local delta = input.Delta;
+                    mouse.Delta = Vec2(-delta.y, -delta.x);
+                    return Enum.ContextActionResult.Sink;
+                end; local function Thumb(action, state, input)
+                    gamepad[input.KeyCode.Name] = input.Position;
+                    return Enum.ContextActionResult.Sink;
+                end; local function Trigger(action, state, input)
+                    gamepad[input.KeyCode.Name] = input.Position.z;
+                    return Enum.ContextActionResult.Sink;
+                end; local function MouseWheel(action, state, input)
+                    mouse[input.UserInputType.Name] = -input.Position.z;
+                    return Enum.ContextActionResult.Sink;
+                end; local function Zero(t)
+                    for k, v in pir(t) do
+                        t[k] = v*0;
+                    end;
+                end; function Input.StartCapture()
+                    ContextActionService:BindActionAtPriority("FreecamKeyboard", Keypress, false, INPUT_PRIORITY,
+                        Enum.KeyCode.W, Enum.KeyCode.U,
+                        Enum.KeyCode.A, Enum.KeyCode.H,
+                        Enum.KeyCode.S, Enum.KeyCode.J,
+                        Enum.KeyCode.D, Enum.KeyCode.K,
+                        Enum.KeyCode.E, Enum.KeyCode.I,
+                        Enum.KeyCode.Q, Enum.KeyCode.Y,
+                        Enum.KeyCode.Up, Enum.KeyCode.Down
+                    ); ContextActionService:BindActionAtPriority("FreecamMousePan",          MousePan,   false, INPUT_PRIORITY, Enum.UserInputType.MouseMovement);
+                    ContextActionService:BindActionAtPriority("FreecamMouseWheel",        MouseWheel, false, INPUT_PRIORITY, Enum.UserInputType.MouseWheel);
+                    ContextActionService:BindActionAtPriority("FreecamGamepadButton",     GpButton,   false, INPUT_PRIORITY, Enum.KeyCode.ButtonX, Enum.KeyCode.ButtonY);
+                    ContextActionService:BindActionAtPriority("FreecamGamepadTrigger",    Trigger,    false, INPUT_PRIORITY, Enum.KeyCode.ButtonR2, Enum.KeyCode.ButtonL2);
+                    ContextActionService:BindActionAtPriority("FreecamGamepadThumbstick", Thumb,      false, INPUT_PRIORITY, Enum.KeyCode.Thumbstick1, Enum.KeyCode.Thumbstick2);
+                end; function Input.StopCapture()
+                    navSpeed = 1; Zero(gamepad);
+                    Zero(keyboard); Zero(mouse);
+                    ContextActionService:UnbindAction("FreecamKeyboard");
+                    ContextActionService:UnbindAction("FreecamMousePan");
+                    ContextActionService:UnbindAction("FreecamMouseWheel");
+                    ContextActionService:UnbindAction("FreecamGamepadButton");
+                    ContextActionService:UnbindAction("FreecamGamepadTrigger");
+                    ContextActionService:UnbindAction("FreecamGamepadThumbstick");
+                end;
+            end;
+        end; warn("1"); local function GetFocusDistance(cameraFrame)
+            local znear, viewport = 0.1, Cam.ViewportSize;
+            local projy = 2*mtan(cameraFov/2);
+            local projx = viewport.x/viewport.y*projy;
+            local fx = cameraFrame.rightVector;
+            local fy = cameraFrame.upVector;
+            local fz = cameraFrame.lookVector;        
+            local minVect, minDist = Vec3(), 512;
+            for x = 0, 1, 0.5 do
+                for y = 0, 1, 0.5 do
+                    local cx = (x - 0.5)*projx;
+                    local cy = (y - 0.5)*projy;
+                    local offset = fx*cx - fy*cy + fz;
+                    local origin = cameraFrame.p + offset*znear;
+                    local part, hit = FindPartOnRay(W, Rayn(origin, offset.unit*minDist));
+                    local dist = (hit - origin).magnitude;
+                    if minDist > dist then
+                        minDist = dist;
+                        minVect = offset.unit;
+                    end;
+                end;
+            end; return fz:Dot(minVect)*minDist;
+        end; local function StepFreecam(dt)
+            local vel = velSpring:Update(dt, Input.Vel(dt));
+            local pan = panSpring:Update(dt, Input.Pan(dt));
+            local fov = fovSpring:Update(dt, Input.Fov(dt));
+            local zoomFactor = msqrt(mtan(mrad(70/2))/mtan(mrad(cameraFov/2)));
+            cameraFov = mclamp(cameraFov + fov*FOV_GAIN*(dt/zoomFactor), 1, 120);
+            cameraRot = cameraRot + pan*PAN_GAIN*(dt/zoomFactor);
+            cameraRot = Vec2(mclamp(cameraRot.x, -PITCH_LIMIT, PITCH_LIMIT), cameraRot.y%(2*mmaths.pi));
+            local cameraCFrame = CF(cameraPos)*CFo(cameraRot.x, cameraRot.y, 0)*CF(vel*NAV_GAIN*dt);
+            cameraPos = cameraCFrame.p; Cam.CFrame = cameraCFrame;
+            Cam.Focus = cameraCFrame*CF(0, 0, -GetFocusDistance(cameraCFrame));
+            Cam.FieldOfView = cameraFov;
+        end; warn("2"); local PlayerState = {} do
+            local mouseIconEnabled, cameraSubject = nil, nil;
+            local cameraType, cameraFocus = nil, nil;
+            local cameraCFrame, cameraFieldOfView = nil, nil;
+            local screenGuis = {}; local coreGuis = {
+                Backpack = true,
+                Chat = true,
+                Health = true,
+                PlayerList = true,
+            }; local setCores = {
+                BadgesNotificationsActive = true,
+                PointsNotificationsActive = true,
+            }; function PlayerState.Push(hideguis:boolean)
+                for name in pir(coreGuis) do
+                    coreGuis[name] = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType[name]);
+                    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType[name], false);
+                end; for name in pir(setCores) do
+                    setCores[name] = StarterGui:GetCore(name);
+                    StarterGui:SetCore(name, false);
+                end; if PSG and not hideguis then
+                    for _, gui in pir(GetChildren(PSG)) do
+                        if IsA(gui, "ScreenGui") and gui.Enabled then
+                            screenGuis[#screenGuis + 1] = gui;
+                            gui.Enabled = false;
+                        end;
+                    end;
+                end; cameraFieldOfView = Cam.FieldOfView;
+                Cam.FieldOfView = 70; cameraType = Cam.CameraType;
+                Cam.CameraType = Enum.CameraType.Custom;
+                cameraSubject = Cam.CameraSubject;
+                Cam.CameraSubject = nil;
+                cameraCFrame = Cam.CFrame;
+                cameraFocus = Cam.Focus;
+                mouseIconEnabled = UserInputService.MouseIconEnabled;
+                UserInputService.MouseIconEnabled = false;
+                mouseBehavior = UserInputService.MouseBehavior;
+                UserInputService.MouseBehavior = Enum.MouseBehavior.Default;
+            end; function PlayerState.Pop(hideguis:boolean)
+                for name, isEnabled in pir(coreGuis) do
+                    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType[name], isEnabled)
+                end; for name, isEnabled in pir(setCores) do
+                    StarterGui:SetCore(name, isEnabled)
+                end if not hideguis then
+                    for _, gui in pir(screenGuis) do
+                        if gui.Parent then
+                            gui.Enabled = true;
+                        end;
+                    end;
+                end; Cam.FieldOfView = cameraFieldOfView;
+                cameraFieldOfView = nil; Cam.CameraType = cameraType;
+                cameraType = nil; Cam.CameraSubject = cameraSubject;
+                cameraSubject = nil; Cam.CFrame = cameraCFrame;
+                cameraCFrame = nil; Cam.Focus = cameraFocus; cameraFocus = nil;
+                UserInputService.MouseIconEnabled = mouseIconEnabled;
+                mouseIconEnabled = nil;
+                UserInputService.MouseBehavior = mouseBehavior;
+                mouseBehavior = nil;
+            end;
+        end; local function StartFreecam()
+            local cameraCFrame = Cam.CFrame;
+            cameraRot = Vec2(cameraCFrame:toEulerAnglesYXZ());
+            cameraPos = cameraCFrame.p;
+            cameraFov = Cam.FieldOfView;
+            velSpring:Reset(Vec3());
+            panSpring:Reset(Vec2());
+            fovSpring:Reset(0);
+            PlayerState.Push(args.hideguis)
+            H:BindToRenderStep("Freecam", Enum.RenderPriority.Camera.Value, StepFreecam);
+            Input.StartCapture();
+        end; local function StopFreecam()
+            Input.StopCapture();
+            H:UnbindFromRenderStep("Freecam");
+            PlayerState.Pop(args.hideguis);
+        end; warn("4");  do
+            local enabled = false; local function ToggleFreecam()
+                if not ScriptCache.GlobalFreecam then return; end;
+                if enabled then
+                    StopFreecam();
+                else
+                    StartFreecam();
+                end; enabled = not enabled;
+            end; local function CheckMacro(macro)
+                for i = 1, #macro - 1 do
+                    if not UserInputService:IsKeyDown(macro[i]) then
+                        return;
+                    end;
+                end; ToggleFreecam();
+            end; local function HandleActivationInput(action, state, input)
+                if state == Enum.UserInputState.Begin then
+                    if input.KeyCode == FREECAM_MACRO_KB[#FREECAM_MACRO_KB] then
+                        CheckMacro(FREECAM_MACRO_KB);
+                    end;
+                end; return Enum.ContextActionResult.Pass;
+            end; warn("5"); ContextActionService:BindActionAtPriority("FreecamToggle", HandleActivationInput, false, TOGGLE_INPUT_PRIORITY, FREECAM_MACRO_KB[#FREECAM_MACRO_KB]);
+        end;
+    end};
 end;
 
 GG.CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0};
