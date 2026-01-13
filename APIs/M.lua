@@ -51,7 +51,7 @@ end;
 
 if loaded then
     return WindUI and WindUI:Notify({
-        Title = "<font color='rgb(255, 0, 0)0)'>ALERT</font>",
+        Title = "<font color='rgb(255, 0, 0)'>ALERT</font>",
         Content = "Close current UI before re-execute.",
         Icon = "circle-alert",
         Duration = 20,
