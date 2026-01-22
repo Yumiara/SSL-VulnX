@@ -3479,6 +3479,28 @@ GG.WeaponList = (GameId == 7671049560 and {
 	"Light Helmet",
 	"Dagger",
 });
+GG.Emotes = GG.Emotes or (GameId == 2294168059 and {
+    ["Caramelldansen"] = "rbxassetid://108341699065927";
+    ["Billy Bounce"] = "rbxassetid://124721416296254";
+    ["Floss And Hype"] = "rbxassetid://118211758819256";
+    ["Party"] = "rbxassetid://97388291397086";
+    ["Pretty Scene Girl"] = "rbxassetid://77375371220402";
+    ["Wait"] = "rbxassetid://97278636186187";
+    ["Sprinkler"] = "rbxassetid://105495300992261";
+    ["Isamu"] = "rbxassetid://103796289235589";
+    ["Geto Walk"] = "rbxassetid://117043601474018";
+    ["Gojo Walk"] = "rbxassetid://131015929965834";
+    ["Static"] = "rbxassetid://115855173319587";
+    ["Sodapop"] = "rbxassetid://122975904999352";
+    ["Toby"] = "rbxassetid://88925958724091";
+    ["The Carson"] = "rbxassetid://137268452458540";
+    ["DanceIfYouCarried"] = "rbxassetid://139695012236976";
+    ["GetItKing"] = "rbxassetid://103560414696316";
+    ["Metroman"] = "rbxassetid://71679811598233";
+    ["Spooky Month"] = "rbxassetid://116683769013474";
+    ["Thriller"] = "rbxassetid://76194351587780";
+    ["Panicore"] = "rbxassetid://120159754518139";
+});
 GG.PaintingDatas = GG.PaintingDatas or (PlaceId == 96354063422506 and {
     [84409295758845] = {
         {
