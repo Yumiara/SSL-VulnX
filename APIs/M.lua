@@ -1087,7 +1087,7 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                         self:UIFromModule(mod,v.__dats,path,v.Title,v.allign); continue;
                     end;
                 end;
-                if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.Path then
+                if v.__type ~= "Divider" and v.__type ~= "Section" and v.__type ~= "Code" and v.__type ~= "Paragraph" and v.Path then
                     self:GetConfigFromPath(v.Path, path);
                 end;
                 v.Callback = v.Callback or function(state)
@@ -1127,7 +1127,10 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                     end;
                     mod:Code(v);
                 else
-                    mod[v.__type](mod, v);
+                    local Other = mod[v.__type](mod, v);
+                    if v.GlobalName then
+                        ScriptCache[v.GlobalName] = Other;
+                    end;
                 end;
             end; if i < maxdats then
                 Group:Space();
