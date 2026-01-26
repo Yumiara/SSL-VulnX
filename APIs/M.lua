@@ -2362,12 +2362,8 @@ AssetStorage.Key = function(): nil
                     local tweenInfoFadeIn = TwInfo(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In);
     
                     for _, msg in ipir({
-                        {Text = "Vulnerability X", Duration = 0.5},
-                        {Text = "Script verified by VULX AI", Duration = 0.5},
-                        {Text = "Script verfied by TTJY's Bot", Duration = 0.5},
-                        {Text = "Script made by TTJY", Duration = 0.5},
-                        {Text = "Script made by Sevensenz7", Duration = 0.5},
-                        {Text = "Script made by x.nep", Duration = 0.5},
+                        {Text = "TTJY Hub", Duration = 0.5},
+                        {Text = "Script made by TTJY Studio", Duration = 0.5},
                         {Text = "Thank you!", Duration = 0.5}
                     }) do
                         local tweenOut = TwCreate(TweenService, textLabel, tweenInfoFadeOut, {TextTransparency = 1});
@@ -3191,35 +3187,14 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
             ScriptCache.createParagraph_Wel(tab, "Error when receiving information about the Discord server", EnCodeJ(HttpService, Response), "triangle-alert", 26, "Red");
         end;
     end;
-
-    ScriptCache.createSection_Wel(tab, "✨ Script Infos ✨");
-
-    ScriptCache.createParagraph_Wel(tab, "Forsaken",
-        "VULX has the best <b>Forsaken</b> script, featuring invisibility, cool emotes, ESP, and other tools to enhance your gameplay.\n<font color=\"#FF0000\">Reach is still in development; to enable it, you must use <b>Config ONLY</b>.</font>",
-        "sword");
-    ScriptCache.createParagraph_Wel(tab, "Tower Defense Simulator",
-        "VULX is the only script available for <b>Tower Defense Simulator</b>. Our features are great, but we highly recommend trying it on an <b>alt account</b> or recording a macro on an alt due to the strong anti-cheat system.\n<font color=\"#FF0000\">More updates are coming soon. For now, we only have the macro feature because TTJY has been busy.</font>",
-        "shield");
-    ScriptCache.createParagraph_Wel(tab, "All Star X",
-        "VULX offers an <b>All Star X</b> script that includes an excellent macro, AFK farming, and more.\nThe game has no anti-cheat, so you don’t need to worry.",
-        "shield");
-
     ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
 
     ScriptCache.createParagraph_Wel(tab, "TTJY",
         "TTJY is a Luau developer who also created the official VULX site. With 5 years of scripting experience (TTJY Hub – NeuronX – Flow - VULX), TTJY manages all VULX APIs. If you need to report a bug, you can report it directly to TTJY.",
         "user");
 
-    ScriptCache.createParagraph_Wel(tab, "Ironic",
-        "Ironic is the founder of VULX. He usually manages VULX products like cheap Robux, accounts for sale, and oversees the community.",
-        "user");
-
-    ScriptCache.createParagraph_Wel(tab, "x.nep",
-        "x.nep is also a Luau developer who helps with VULX in coding.",
-        "user");
-
     ScriptCache.createParagraph_Wel(tab, "Contact Us",
-        "Discord : discord.gg/c8cUR6Unay",
+        "Discord : discord.gg/G7CX2rD9p2",
         "contact"
     );
 
@@ -37302,7 +37277,7 @@ C.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(v)
         Cloned.Name = "DiscordInvite"; Cloned.ButtonText.Text = "Discord Invite";
         ButtonLayout.CellSize = UDim2.new(0,150,0,36); Cloned.Parent = ButtonArea;
         Cloned.MouseButton1Click:Connect(function()
-            return setc and setc("https://discord.gg/DjR32bkzsQ");
+            return setc and setc("https://discord.gg/G7CX2rD9p2");
         end); if string.find(ErrorMessage.Text, "TTJY_ID7") then
             ErrorMessage.RichText=true;
             ErrorMessage.Text = "Your executor environment is not standard (Probably New Executor). Please try again or switch to a different executor.\n\n<font size=\"14\">Join our Discord server for recommendations or to report bugs.</font>";
