@@ -3192,8 +3192,7 @@ GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI)
     ScriptCache.createSection_Wel(tab, "💖 About Us 💖");
 
     ScriptCache.createParagraph_Wel(tab, "TTJY",
-        "TTJY is a Luau developer who also created the official VULX site. With 5 years of scripting experience (TTJY Hub – NeuronX – Flow - VULX), TTJY manages all VULX APIs. If you need to report a bug, you can report it directly to TTJY.",
-        "user");
+        "Everything for you.");
 
     ScriptCache.createParagraph_Wel(tab, "Contact Us",
         "Discord : discord.gg/G7CX2rD9p2",
