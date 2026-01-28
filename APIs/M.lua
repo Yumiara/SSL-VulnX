@@ -1085,7 +1085,9 @@ AssetStorage.Wind = function(...): {[string]:(any)->(...any)}?
                 Title = dat.Title;
                 Box = true,
                 Opened = dat.Open,
-            }); for _, v in ipir(dat.__dat) do
+            }); if dat.GlobalName then
+                ScriptCache[dat.GlobalName] = mod;
+            end; for _, v in ipir(dat.__dat) do
                 if v.__type == "Module" then
                     if v.__dats then
                         self:UIFromModule(mod,v.__dats,path,v.Title,v.allign); continue;
@@ -3159,7 +3161,7 @@ ScriptCache.fetchDiscordInfo_Wel = ScriptCache.fetchDiscordInfo_Wel or function(
 end;
 
 GG.WelcomeHandler = GG.WelcomeHandler or function(tab: WelcomeTab, wind: WindUI): any
-    ScriptCache.InviteCode = ScriptCache.InviteCode or "c8cUR6Unay";
+    ScriptCache.InviteCode = ScriptCache.InviteCode or "AJb92UQR7H";
     if not LoaderSettings.BadNetwork then
         local DiscordAPI = "https://discord.com/api/v10/invites/" .. ScriptCache.InviteCode .. "?with_counts=true&with_expiration=true";
         local Response = ScriptCache.fetchDiscordInfo_Wel(DiscordAPI, wind);
@@ -28017,7 +28019,7 @@ GG.LoadVUI = function(to:string)
             TextLabel.TextColor3 = fromRGB(255, 255, 255);
             TextLabel.BackgroundTransparency = 1;
             TextLabel.Size = Dim2(1, 0, 0, 28);
-            TextLabel.Text = "Vulnerability X Log";
+            TextLabel.Text = "TTJY Studio X Log";
             TextLabel.Name = "ErrorTitle";
 
             local UIPadding = Instancen("UIPadding", Frame2);
@@ -31417,7 +31419,8 @@ GG.LoadUILib = function()
                     Width = aj.Width or 130,
                     TextBoxWidth = aj.Window.NewElements and 40 or 30,
                     ThumbSize = 13,
-                    IconSize = 26
+                    IconSize = 26,
+                    allign = aj.allign or Enum.TextXAlignment.Right;
                 }; if ak.Icons == {} then
                     ak.Icons = {
                         From = "sfsymbols:sunMinFill",
@@ -31612,7 +31615,7 @@ GG.LoadUILib = function()
                             end;
                         end;
                     end;
-                end; ak.UIElements.SliderContainer.TextBox.TextXAlignment = Enum.TextXAlignment.Right;
+                end; ak.UIElements.SliderContainer.TextBox.TextXAlignment = ak.allign;
                 function ak.SetMax(ay, az)
                     ak.Value.Max = az; local aA = ton(ak.Value.Default) or ap;
                     if aA > az then ak:Set(az); else
@@ -35363,7 +35366,7 @@ GG.LoadUILib = function()
 
             return function(ar)
                 local as = {
-                    Title = ar.Title or "Vulnerability X",
+                    Title = ar.Title or "TTJY Hub",
                     Author = ar.Author,
                     Icon = ar.Icon,
                     IconSize = ar.IconSize or 22,
@@ -37282,7 +37285,7 @@ C.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(v)
             ErrorMessage.RichText=true;
             ErrorMessage.Text = "Your executor environment is not standard (Probably New Executor). Please try again or switch to a different executor.\n\n<font size=\"14\">Join our Discord server for recommendations or to report bugs.</font>";
         elseif string.find(ErrorMessage.Text, "ID500:V") then
-            ErrorMessage.Text = "Volt Detected by Vulnerability X\n\n Please rejoin to take another step to our Authentication.";
+            ErrorMessage.Text = "Volt Detected by TTJY Studio X\n\n Please rejoin to take another step to our Authentication.";
         end;
 	end;
 end);
